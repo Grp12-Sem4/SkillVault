@@ -1,4 +1,5 @@
 package com.skillvault.skillvault_backend.controller;
+
 import com.skillvault.skillvault_backend.model.KnowledgeTopic;
 import com.skillvault.skillvault_backend.service.KnowledgeService;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,19 @@ public class KnowledgeController {
     @PutMapping("/{topicId}/review")
     public KnowledgeTopic reviewTopic(@PathVariable UUID topicId) {
         return knowledgeService.reviewTopic(topicId);
+    }
+
+    // Alternative review route that also accepts updated study notes/content.
+    @PostMapping("/{topicId}/review")
+    public KnowledgeTopic reviewTopicWithContent(
+            @PathVariable UUID topicId,
+            @RequestBody(required = false) String updatedContent
+    ) {
+        if (updatedContent == null || updatedContent.isBlank()) {
+            return knowledgeService.reviewTopic(topicId);
+        }
+
+        return knowledgeService.reviewTopic(topicId, updatedContent);
     }
 
     // Apply decay to a topic
