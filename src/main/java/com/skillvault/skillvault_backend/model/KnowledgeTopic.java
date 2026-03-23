@@ -4,11 +4,12 @@ import com.skillvault.skillvault_backend.enums.KnowledgeStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name="knowledge_topics")
+@Table(name = "knowledge_topics")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,18 +18,29 @@ public class KnowledgeTopic {
 
     @Id
     @GeneratedValue
-    private UUID id;
+    @Column(name = "topic_id")
+    private UUID topicId;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User owner;
 
     private String title;
 
-    private String content;
+    private String subject;
+
+    @Column(name = "mastery_level")
+    private double masteryLevel;
+
+    @Column(name = "decay_rate")
+    private double decayRate;
+
+    @Column(name = "last_reviewed")
+    private LocalDate lastReviewed;
 
     @Enumerated(EnumType.STRING)
     private KnowledgeStatus status;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @ManyToOne
-    @JoinColumn(name="author_id")
-    private User author;
 }

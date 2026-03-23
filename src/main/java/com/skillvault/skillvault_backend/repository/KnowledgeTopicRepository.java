@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.UUID;
 
-public interface KnowledgeTopicRepository extends JpaRepository<KnowledgeTopic, UUID> {
-
-    List<KnowledgeTopic> findByAuthor(User author);
-
+public interface KnowledgeTopicRepository extends JpaRepository<KnowledgeTopic, UUID> 
+{
+    List<KnowledgeTopic> findByStatus(String status);
+    List<KnowledgeTopic> findByOwnerId(UUID userId);
 }
