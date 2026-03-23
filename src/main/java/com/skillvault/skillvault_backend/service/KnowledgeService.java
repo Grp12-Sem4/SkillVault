@@ -23,24 +23,23 @@ public class KnowledgeService {
      * Create a new knowledge topic
      */
     public KnowledgeTopic createTopic(KnowledgeTopic topic) {
-
         topic.setCreatedAt(java.time.LocalDateTime.now());
         topic.setLastReviewed(LocalDate.now());
         topic.setStatus(KnowledgeStatus.CURRENT);
+        topic.setMasteryLevel(topic.getMasteryLevel() > 0 ? topic.getMasteryLevel() : 100.0);
 
         return knowledgeTopicRepository.save(topic);
     }
 
     /**
-     * Review a topic (resets mastery)
+     * Review a topic and restore mastery on the 0-100 scale.
      */
     public KnowledgeTopic reviewTopic(UUID topicId) {
-
         KnowledgeTopic topic = knowledgeTopicRepository
                 .findById(topicId)
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
 
-        topic.setMasteryLevel(10.0);
+        topic.setMasteryLevel(100.0);
         topic.setLastReviewed(LocalDate.now());
         topic.setStatus(KnowledgeStatus.CURRENT);
 
@@ -51,7 +50,6 @@ public class KnowledgeService {
      * Apply forgetting curve decay to a single topic
      */
     public KnowledgeTopic applyDecay(UUID topicId) {
-
         KnowledgeTopic topic = knowledgeTopicRepository
                 .findById(topicId)
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
@@ -67,8 +65,10 @@ public class KnowledgeService {
 
         topic.setMasteryLevel(newMastery);
 
-        if (newMastery < 4) {
+        if (newMastery < 40.0) {
             topic.setStatus(KnowledgeStatus.NEEDS_REVISION);
+        } else {
+            topic.setStatus(KnowledgeStatus.CURRENT);
         }
 
         return knowledgeTopicRepository.save(topic);
@@ -78,11 +78,9 @@ public class KnowledgeService {
      * Apply decay to all topics in the system
      */
     public void applyDecayToAllTopics() {
-
         List<KnowledgeTopic> topics = knowledgeTopicRepository.findAll();
 
         for (KnowledgeTopic topic : topics) {
-
             long days = ChronoUnit.DAYS.between(
                     topic.getLastReviewed(),
                     LocalDate.now()
@@ -94,8 +92,10 @@ public class KnowledgeService {
 
             topic.setMasteryLevel(newMastery);
 
-            if (newMastery < 4) {
+            if (newMastery < 40.0) {
                 topic.setStatus(KnowledgeStatus.NEEDS_REVISION);
+            } else {
+                topic.setStatus(KnowledgeStatus.CURRENT);
             }
 
             knowledgeTopicRepository.save(topic);
@@ -106,11 +106,7 @@ public class KnowledgeService {
      * Get topics needing revision
      */
     public List<KnowledgeTopic> getTopicsNeedingRevision() {
-
-        return knowledgeTopicRepository.findAll()
-                .stream()
-                .filter(topic -> topic.getMasteryLevel() < 4)
-                .toList();
+        return knowledgeTopicRepository.findByStatus(KnowledgeStatus.NEEDS_REVISION);
     }
 
     /**

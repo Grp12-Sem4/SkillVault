@@ -35,7 +35,7 @@ public class KnowledgeController {
     }
 
     // Get topics needing revision
-    @GetMapping("/revision-needed")
+    @GetMapping({"/revision-needed", "/needs-revision"})
     public List<KnowledgeTopic> getTopicsNeedingRevision() {
         return knowledgeService.getTopicsNeedingRevision();
     }
