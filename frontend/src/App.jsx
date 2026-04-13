@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import Knowledge from './pages/Knowledge.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 
@@ -22,6 +23,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/knowledge"
+        element={
+          <ProtectedRoute>
+            <Knowledge />
           </ProtectedRoute>
         }
       />
