@@ -47,10 +47,14 @@ public class SkillController {
         return service.applyDecay(skillId);
     }
 
-    @GetMapping("/user/{userId}")
-    public List<Skill> getUserSkills(@PathVariable UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    @GetMapping("/my")
+    public List<Skill> getUserSkills(Principal principal) {
+        if (principal == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+        }
+
+        User user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
 
         return service.getUserSkills(user);
     }
