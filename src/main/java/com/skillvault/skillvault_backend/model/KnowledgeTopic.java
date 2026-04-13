@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Entity
@@ -43,4 +44,9 @@ public class KnowledgeTopic {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    public double calculateCurrentMastery() {
+        long days = ChronoUnit.DAYS.between(lastReviewed, LocalDate.now());
+        return masteryLevel * Math.exp(-decayRate * days);
+    }
 }

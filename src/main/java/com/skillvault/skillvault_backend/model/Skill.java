@@ -4,7 +4,7 @@ import com.skillvault.skillvault_backend.enums.*;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.*;
-
+import java.time.LocalDate;
 @Entity
 @Table(name = "skills")
 @Getter
@@ -29,6 +29,13 @@ public class Skill {
 
     private Boolean isActive;
 
+    private Double skillScore = 0.0;
+
+    private Double confidenceIndex = 100.0;
+
+    private Integer usageFrequency = 0;
+
+    private LocalDate lastUsed;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

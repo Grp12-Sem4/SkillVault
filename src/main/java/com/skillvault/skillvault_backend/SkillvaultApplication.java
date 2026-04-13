@@ -2,12 +2,15 @@ package com.skillvault.skillvault_backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-public class SkillvaultApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(SkillvaultApplication.class, args);
-	}
+@EnableScheduling
+public class SkillvaultApplication 
+{
+    public static void main(String[] args) 
+	{
+        SpringApplication.run(SkillvaultApplication.class, args);
+    }
 
 }

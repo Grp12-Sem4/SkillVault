@@ -8,6 +8,6 @@ import java.util.*;
 
 public interface SkillRepository extends JpaRepository<Skill, UUID> {
 
-    List<Skill> findByUser(User user);
+    List<Skill> findByUser(UUID userId);
 
 }
