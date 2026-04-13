@@ -1,6 +1,11 @@
 package com.skillvault.skillvault_backend.service;
 
+import com.skillvault.skillvault_backend.dto.MarketplaceSkillResponse;
+import com.skillvault.skillvault_backend.dto.UserSummaryResponse;
+import com.skillvault.skillvault_backend.enums.SkillType;
+import com.skillvault.skillvault_backend.model.SoftSkill;
 import com.skillvault.skillvault_backend.model.Skill;
+import com.skillvault.skillvault_backend.model.TechnicalSkill;
 import com.skillvault.skillvault_backend.model.User;
 import com.skillvault.skillvault_backend.repository.SkillRepository;
 import org.springframework.stereotype.Service;
@@ -54,5 +59,52 @@ public class SkillService {
 
     public List<Skill> getUserSkills(User user) {
         return repository.findByUser(user);
+    }
+
+    public List<MarketplaceSkillResponse> getMarketplaceSkills(User currentUser) {
+        return repository.findByTypeAndUser_IdNot(SkillType.OFFERED, currentUser.getId()).stream()
+                .map(this::toMarketplaceSkillResponse)
+                .toList();
+    }
+
+    public MarketplaceSkillResponse toMarketplaceSkillResponse(Skill skill) {
+        return new MarketplaceSkillResponse(
+                skill.getId(),
+                skill.getTitle(),
+                skill.getDescription(),
+                skill.getCategory(),
+                skill.getCreditValue(),
+                skill.getType(),
+                getSkillCategory(skill),
+                skill.getSkillScore(),
+                skill.getConfidenceIndex(),
+                toUserSummary(skill.getUser())
+        );
+    }
+
+    public UserSummaryResponse toUserSummary(User user) {
+        if (user == null) {
+            return null;
+        }
+
+        return new UserSummaryResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole(),
+                user.getCreditBalance()
+        );
+    }
+
+    private String getSkillCategory(Skill skill) {
+        if (skill instanceof TechnicalSkill) {
+            return "TECHNICAL";
+        }
+
+        if (skill instanceof SoftSkill) {
+            return "SOFT";
+        }
+
+        return null;
     }
 }

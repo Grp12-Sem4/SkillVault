@@ -1,3 +1,4 @@
+import AppNavigation from '../components/AppNavigation.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const pageStyle = {
@@ -16,17 +17,15 @@ const panelStyle = {
 };
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const userIdentifier = user?.email ?? user?.sub ?? 'User';
 
   return (
     <main style={pageStyle}>
       <section style={panelStyle}>
+        <AppNavigation />
         <h1>Dashboard</h1>
         <p>Welcome to Skill Vault, {userIdentifier}.</p>
-        <button type="button" onClick={logout}>
-          Logout
-        </button>
       </section>
     </main>
   );

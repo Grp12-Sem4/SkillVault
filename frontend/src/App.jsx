@@ -6,6 +6,7 @@ import Knowledge from './pages/Knowledge.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Skills from './pages/Skills.jsx';
+import Trades from './pages/Trades.jsx';
 
 function RootRedirect() {
   const { isAuthenticated } = useAuth();
@@ -40,6 +41,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Skills />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/trades"
+        element={
+          <ProtectedRoute>
+            <Trades />
           </ProtectedRoute>
         }
       />

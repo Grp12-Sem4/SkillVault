@@ -25,6 +25,8 @@ public class TradeSession {
     @Enumerated(EnumType.STRING)
     private TradeStatus status;
 
+    private Integer rating;
+
     @ManyToOne
     @JoinColumn(name="skill_id")
     private Skill skill;

@@ -13,4 +13,6 @@ public interface TradeSessionRepository extends JpaRepository<TradeSession, UUID
 
     List<TradeSession> findByProvider(User provider);
 
+    List<TradeSession> findDistinctByRequesterOrProviderOrderByScheduledTimeDesc(User requester, User provider);
+
 }

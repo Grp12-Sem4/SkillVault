@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axiosConfig.js';
+import AppNavigation from '../components/AppNavigation.jsx';
 import AuthContext from '../context/AuthContext.jsx';
 
 const SKILLS_QUERY_KEY = ['skills', 'my'];
@@ -194,15 +195,19 @@ export default function Skills() {
   return (
     <main style={pageStyle}>
       <section style={layoutStyle}>
-        <header style={panelStyle}>
-          <p style={{ marginBottom: '0.5rem', color: '#475569' }}>
-            Signed in as {user?.email ?? user?.sub ?? 'authenticated user'}
-          </p>
-          <h1 style={{ marginTop: 0, marginBottom: '0.75rem' }}>Skills Vault</h1>
-          <p style={{ margin: 0, color: '#475569' }}>
-            Add new skills, see your current progress, and log practice sessions directly against your profile.
-          </p>
-        </header>
+        <div>
+          <AppNavigation />
+
+          <header style={panelStyle}>
+            <p style={{ marginBottom: '0.5rem', color: '#475569' }}>
+              Signed in as {user?.email ?? user?.sub ?? 'authenticated user'}
+            </p>
+            <h1 style={{ marginTop: 0, marginBottom: '0.75rem' }}>Skills Vault</h1>
+            <p style={{ margin: 0, color: '#475569' }}>
+              Add new skills, see your current progress, and log practice sessions directly against your profile.
+            </p>
+          </header>
+        </div>
 
         <section style={panelStyle}>
           <h2 style={{ marginTop: 0 }}>Add Skill</h2>

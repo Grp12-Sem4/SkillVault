@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axiosConfig.js';
+import AppNavigation from '../components/AppNavigation.jsx';
 import AuthContext from '../context/AuthContext.jsx';
 
 const KNOWLEDGE_QUERY_KEY = ['knowledge', 'needs-revision'];
@@ -167,15 +168,19 @@ export default function Knowledge() {
   return (
     <main style={pageStyle}>
       <section style={layoutStyle}>
-        <header style={panelStyle}>
-          <p style={{ marginBottom: '0.5rem', color: '#475569' }}>
-            Signed in as {user?.email ?? user?.sub ?? 'authenticated user'}
-          </p>
-          <h1 style={{ marginTop: 0, marginBottom: '0.75rem' }}>Knowledge Vault</h1>
-          <p style={{ margin: 0, color: '#475569' }}>
-            Create new knowledge topics and review the ones that the backend has flagged for revision.
-          </p>
-        </header>
+        <div>
+          <AppNavigation />
+
+          <header style={panelStyle}>
+            <p style={{ marginBottom: '0.5rem', color: '#475569' }}>
+              Signed in as {user?.email ?? user?.sub ?? 'authenticated user'}
+            </p>
+            <h1 style={{ marginTop: 0, marginBottom: '0.75rem' }}>Knowledge Vault</h1>
+            <p style={{ margin: 0, color: '#475569' }}>
+              Create new knowledge topics and review the ones that the backend has flagged for revision.
+            </p>
+          </header>
+        </div>
 
         <section style={panelStyle}>
           <h2 style={{ marginTop: 0 }}>Create Topic</h2>

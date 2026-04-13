@@ -1,5 +1,6 @@
 package com.skillvault.skillvault_backend.controller;
 
+import com.skillvault.skillvault_backend.dto.MarketplaceSkillResponse;
 import com.skillvault.skillvault_backend.model.Skill;
 import com.skillvault.skillvault_backend.model.User;
 import com.skillvault.skillvault_backend.repository.UserRepository;
@@ -57,5 +58,17 @@ public class SkillController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
 
         return service.getUserSkills(user);
+    }
+
+    @GetMapping("/marketplace")
+    public List<MarketplaceSkillResponse> getMarketplaceSkills(Principal principal) {
+        if (principal == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+        }
+
+        User user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+
+        return service.getMarketplaceSkills(user);
     }
 }

@@ -1,6 +1,8 @@
 package com.skillvault.skillvault_backend.controller;
 
-import com.skillvault.skillvault_backend.model.TradeSession;
+import com.skillvault.skillvault_backend.dto.CompleteTradeRequest;
+import com.skillvault.skillvault_backend.dto.CreateTradeRequest;
+import com.skillvault.skillvault_backend.dto.TradeResponse;
 import com.skillvault.skillvault_backend.model.User;
 import com.skillvault.skillvault_backend.repository.UserRepository;
 import com.skillvault.skillvault_backend.service.TradeService;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -23,26 +26,40 @@ public class TradeController {
         this.userRepository = userRepository;
     }
 
+    @GetMapping
+    public List<TradeResponse> getTrades(Principal principal) {
+        return tradeService.getTradesForUser(getAuthenticatedUser(principal));
+    }
+
     @PostMapping
-    public TradeSession createTrade(@RequestBody TradeSession tradeSession, Principal principal) {
+    public TradeResponse createTrade(@RequestBody CreateTradeRequest request, Principal principal) {
+        return tradeService.createTradeRequest(getAuthenticatedUser(principal), request);
+    }
+
+    @PutMapping("/{tradeId}/accept")
+    public TradeResponse acceptTrade(@PathVariable UUID tradeId, Principal principal) {
+        return tradeService.acceptTrade(tradeId, getAuthenticatedUser(principal));
+    }
+
+    @PutMapping("/{tradeId}/complete")
+    public TradeResponse completeTrade(
+            @PathVariable UUID tradeId,
+            @RequestBody CompleteTradeRequest request,
+            Principal principal
+    ) {
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Completion payload is required");
+        }
+
+        return tradeService.completeTrade(tradeId, getAuthenticatedUser(principal), request.rating());
+    }
+
+    private User getAuthenticatedUser(Principal principal) {
         if (principal == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
         }
 
-        User authenticatedUser = userRepository.findByEmail(principal.getName())
+        return userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
-
-        tradeSession.setRequester(authenticatedUser);
-        return tradeService.createTradeRequest(tradeSession);
-    }
-
-    @PutMapping("/{tradeId}/accept")
-    public TradeSession acceptTrade(@PathVariable UUID tradeId) {
-        return tradeService.acceptTrade(tradeId);
-    }
-
-    @PutMapping("/{tradeId}/complete")
-    public TradeSession completeTrade(@PathVariable UUID tradeId, @RequestParam int rating) {
-        return tradeService.completeTrade(tradeId, rating);
     }
 }

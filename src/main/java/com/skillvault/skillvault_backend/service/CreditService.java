@@ -7,8 +7,11 @@ import com.skillvault.skillvault_backend.model.User;
 import com.skillvault.skillvault_backend.repository.CreditTransactionRepository;
 import com.skillvault.skillvault_backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Service
 public class CreditService {
@@ -51,7 +54,7 @@ public class CreditService {
         }
 
         if (requester.getCreditBalance() < credits) {
-            throw new IllegalStateException("Insufficient credits.");
+            throw new ResponseStatusException(BAD_REQUEST, "Insufficient credits.");
         }
 
         requester.setCreditBalance(requester.getCreditBalance() - credits);
