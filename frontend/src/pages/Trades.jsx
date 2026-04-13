@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axiosConfig.js';
 import AppNavigation from '../components/AppNavigation.jsx';
+import CreditDisplay, { CURRENT_USER_QUERY_KEY } from '../components/CreditDisplay.jsx';
 
-const CURRENT_USER_QUERY_KEY = ['current-user'];
 const MARKETPLACE_SKILLS_QUERY_KEY = ['marketplace-skills'];
 const TRADES_QUERY_KEY = ['trades'];
 
@@ -34,14 +34,6 @@ const headerRowStyle = {
   alignItems: 'flex-start',
   gap: '1rem',
   flexWrap: 'wrap',
-};
-
-const creditCardStyle = {
-  minWidth: '180px',
-  padding: '1rem 1.1rem',
-  borderRadius: '14px',
-  backgroundColor: '#eff6ff',
-  border: '1px solid #bfdbfe',
 };
 
 const sectionHeaderStyle = {
@@ -144,6 +136,24 @@ const emptyStateStyle = {
   backgroundColor: '#f8fafc',
 };
 
+const feedbackSuccessStyle = {
+  margin: 0,
+  color: '#166534',
+  backgroundColor: '#dcfce7',
+  border: '1px solid #86efac',
+  borderRadius: '12px',
+  padding: '0.85rem 1rem',
+};
+
+const feedbackErrorStyle = {
+  margin: 0,
+  color: '#991b1b',
+  backgroundColor: '#fef2f2',
+  border: '1px solid #fecaca',
+  borderRadius: '12px',
+  padding: '0.85rem 1rem',
+};
+
 function getErrorMessage(error, fallbackMessage) {
   return error?.response?.data?.message ?? fallbackMessage;
 }
@@ -233,6 +243,7 @@ export default function Trades() {
       setSelectedSkill(null);
       queryClient.invalidateQueries({ queryKey: TRADES_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: MARKETPLACE_SKILLS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
     },
   });
 
@@ -243,6 +254,7 @@ export default function Trades() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TRADES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
     },
   });
 
@@ -281,6 +293,8 @@ export default function Trades() {
   const handleSelectSkill = (skill) => {
     setSelectedSkill(skill);
     createTradeMutation.reset();
+    acceptTradeMutation.reset();
+    completeTradeMutation.reset();
   };
 
   const handleResetRequest = () => {
@@ -292,6 +306,21 @@ export default function Trades() {
     createTradeMutation.reset();
   };
 
+  const handleAcceptTrade = (tradeId) => {
+    createTradeMutation.reset();
+    completeTradeMutation.reset();
+    acceptTradeMutation.mutate(tradeId);
+  };
+
+  const handleCompleteTrade = (tradeId, rating) => {
+    createTradeMutation.reset();
+    acceptTradeMutation.reset();
+    completeTradeMutation.mutate({
+      tradeId,
+      rating,
+    });
+  };
+
   const handleCreateTrade = (event) => {
     event.preventDefault();
 
@@ -299,6 +328,8 @@ export default function Trades() {
       return;
     }
 
+    acceptTradeMutation.reset();
+    completeTradeMutation.reset();
     createTradeMutation.mutate({
       providerId: selectedSkill.provider.id,
       skillId: selectedSkill.id,
@@ -325,27 +356,11 @@ export default function Trades() {
                 </p>
               </div>
 
-              <aside style={creditCardStyle}>
-                <p style={{ margin: 0, color: '#1e3a8a', fontWeight: 600 }}>Current Balance</p>
-                {isCurrentUserLoading ? (
-                  <p style={{ marginTop: '0.35rem', fontSize: '1.4rem', color: '#0f172a' }}>Loading...</p>
-                ) : isCurrentUserError ? (
-                  <p style={{ marginTop: '0.35rem', color: '#b91c1c' }}>Unavailable</p>
-                ) : (
-                  <>
-                    <p style={{ marginTop: '0.35rem', fontSize: '1.8rem', color: '#0f172a', fontWeight: 700 }}>
-                      {currentUser?.creditBalance ?? 0}
-                    </p>
-                    <p style={{ marginTop: '0.25rem', color: '#475569', fontSize: '0.95rem' }}>
-                      {currentUser?.name} ({currentUser?.email})
-                    </p>
-                  </>
-                )}
-              </aside>
+              <CreditDisplay />
             </div>
 
             {isCurrentUserError ? (
-              <p style={{ marginTop: '1rem', color: '#b91c1c' }}>
+              <p style={{ ...feedbackErrorStyle, marginTop: '1rem' }}>
                 {getErrorMessage(currentUserError, 'Unable to load your profile.')}
               </p>
             ) : null}
@@ -487,13 +502,13 @@ export default function Trades() {
             </div>
 
             {createTradeMutation.isError ? (
-              <p style={{ ...fullWidthStyle, margin: 0, color: '#b91c1c' }}>
+              <p style={{ ...fullWidthStyle, ...feedbackErrorStyle }}>
                 {getErrorMessage(createTradeMutation.error, 'Unable to create trade right now.')}
               </p>
             ) : null}
 
             {createTradeMutation.isSuccess ? (
-              <p style={{ ...fullWidthStyle, margin: 0, color: '#15803d' }}>
+              <p style={{ ...fullWidthStyle, ...feedbackSuccessStyle }}>
                 Trade request created successfully.
               </p>
             ) : null}
@@ -540,7 +555,7 @@ export default function Trades() {
           {isTradesLoading ? <p style={{ margin: 0 }}>Loading trades...</p> : null}
 
           {isTradesError ? (
-            <p style={{ margin: 0, color: '#b91c1c' }}>
+            <p style={feedbackErrorStyle}>
               {getErrorMessage(tradesError, 'Unable to load trades.')}
             </p>
           ) : null}
@@ -604,7 +619,7 @@ export default function Trades() {
                                   <button
                                     type="button"
                                     style={buttonStyle}
-                                    onClick={() => acceptTradeMutation.mutate(trade.id)}
+                                    onClick={() => handleAcceptTrade(trade.id)}
                                     disabled={isAcceptingCurrentTrade}
                                   >
                                     {isAcceptingCurrentTrade ? 'Accepting...' : 'Accept'}
@@ -632,12 +647,7 @@ export default function Trades() {
                                   <button
                                     type="button"
                                     style={subtleButtonStyle}
-                                    onClick={() =>
-                                      completeTradeMutation.mutate({
-                                        tradeId: trade.id,
-                                        rating: Number(pendingRatingValue),
-                                      })
-                                    }
+                                    onClick={() => handleCompleteTrade(trade.id, Number(pendingRatingValue))}
                                     disabled={isCompletingCurrentTrade}
                                   >
                                     {isCompletingCurrentTrade ? 'Completing...' : 'Complete'}
@@ -656,14 +666,26 @@ export default function Trades() {
           ) : null}
 
           {acceptTradeMutation.isError ? (
-            <p style={{ marginTop: '1rem', marginBottom: 0, color: '#b91c1c' }}>
+            <p style={{ ...feedbackErrorStyle, marginTop: '1rem' }}>
               {getErrorMessage(acceptTradeMutation.error, 'Unable to accept this trade.')}
             </p>
           ) : null}
 
+          {acceptTradeMutation.isSuccess ? (
+            <p style={{ ...feedbackSuccessStyle, marginTop: '1rem' }}>
+              Trade accepted successfully.
+            </p>
+          ) : null}
+
           {completeTradeMutation.isError ? (
-            <p style={{ marginTop: '1rem', marginBottom: 0, color: '#b91c1c' }}>
+            <p style={{ ...feedbackErrorStyle, marginTop: '1rem' }}>
               {getErrorMessage(completeTradeMutation.error, 'Unable to complete this trade.')}
+            </p>
+          ) : null}
+
+          {completeTradeMutation.isSuccess ? (
+            <p style={{ ...feedbackSuccessStyle, marginTop: '1rem' }}>
+              Trade completed and credits refreshed.
             </p>
           ) : null}
         </section>
