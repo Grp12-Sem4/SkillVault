@@ -193,28 +193,29 @@ export default function Skills() {
   };
 
   return (
-    <main style={pageStyle}>
-      <section style={layoutStyle}>
+    <main className="app-page" style={pageStyle}>
+      <section className="app-layout" style={layoutStyle}>
         <div>
           <AppNavigation />
 
-          <header style={panelStyle}>
-            <p style={{ marginBottom: '0.5rem', color: '#475569' }}>
+          <header className="app-panel app-hero-panel app-panel-soft" style={panelStyle}>
+            <p className="app-eyebrow">
               Signed in as {user?.email ?? user?.sub ?? 'authenticated user'}
             </p>
             <h1 style={{ marginTop: 0, marginBottom: '0.75rem' }}>Skills Vault</h1>
-            <p style={{ margin: 0, color: '#475569' }}>
+            <p className="app-subtle-text" style={{ margin: 0 }}>
               Add new skills, see your current progress, and log practice sessions directly against your profile.
             </p>
           </header>
         </div>
 
-        <section style={panelStyle}>
+        <section className="app-panel" style={panelStyle}>
           <h2 style={{ marginTop: 0 }}>Add Skill</h2>
           <form onSubmit={handleSubmit} style={formGridStyle}>
-            <div>
-              <label htmlFor="title">Title</label>
+            <div className="field-group">
+              <label className="field-label" htmlFor="title">Title</label>
               <input
+                className="app-input"
                 id="title"
                 name="title"
                 type="text"
@@ -225,9 +226,10 @@ export default function Skills() {
               />
             </div>
 
-            <div>
-              <label htmlFor="category">Category</label>
+            <div className="field-group">
+              <label className="field-label" htmlFor="category">Category</label>
               <input
+                className="app-input"
                 id="category"
                 name="category"
                 type="text"
@@ -238,9 +240,10 @@ export default function Skills() {
               />
             </div>
 
-            <div>
-              <label htmlFor="creditValue">Credit Value</label>
+            <div className="field-group">
+              <label className="field-label" htmlFor="creditValue">Credit Value</label>
               <input
+                className="app-input"
                 id="creditValue"
                 name="creditValue"
                 type="number"
@@ -253,9 +256,10 @@ export default function Skills() {
               />
             </div>
 
-            <div>
-              <label htmlFor="type">Type</label>
+            <div className="field-group">
+              <label className="field-label" htmlFor="type">Type</label>
               <select
+                className="app-input"
                 id="type"
                 name="type"
                 value={formData.type}
@@ -267,9 +271,10 @@ export default function Skills() {
               </select>
             </div>
 
-            <div>
-              <label htmlFor="skillCategory">Skill Category</label>
+            <div className="field-group">
+              <label className="field-label" htmlFor="skillCategory">Skill Category</label>
               <select
+                className="app-input"
                 id="skillCategory"
                 name="skillCategory"
                 value={formData.skillCategory}
@@ -281,9 +286,10 @@ export default function Skills() {
               </select>
             </div>
 
-            <div style={fullWidthStyle}>
-              <label htmlFor="description">Description</label>
+            <div className="field-group" style={fullWidthStyle}>
+              <label className="field-label" htmlFor="description">Description</label>
               <textarea
+                className="app-input app-textarea"
                 id="description"
                 name="description"
                 value={formData.description}
@@ -294,17 +300,18 @@ export default function Skills() {
             </div>
 
             {createSkillMutation.isError ? (
-              <p style={{ ...fullWidthStyle, margin: 0, color: '#b91c1c' }}>
+              <p className="app-feedback-error" style={fullWidthStyle}>
                 {getErrorMessage(createSkillMutation.error, 'Unable to create skill right now.')}
               </p>
             ) : null}
 
             {createSkillMutation.isSuccess ? (
-              <p style={{ ...fullWidthStyle, margin: 0, color: '#15803d' }}>Skill created.</p>
+              <p className="app-feedback-success" style={fullWidthStyle}>Skill created.</p>
             ) : null}
 
             <div style={{ ...fullWidthStyle, display: 'flex', justifyContent: 'flex-start' }}>
               <button
+                className="app-button"
                 type="submit"
                 style={buttonStyle}
                 disabled={createSkillMutation.isPending}
@@ -315,24 +322,16 @@ export default function Skills() {
           </form>
         </section>
 
-        <section style={panelStyle}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '1rem',
-              marginBottom: '1rem',
-              flexWrap: 'wrap',
-            }}
-          >
+        <section className="app-panel" style={panelStyle}>
+          <div className="app-section-header">
             <div>
               <h2 style={{ margin: 0 }}>My Skills</h2>
-              <p style={{ margin: '0.35rem 0 0', color: '#475569' }}>
+              <p className="app-subtle-text" style={{ margin: '0.35rem 0 0' }}>
                 Loaded from <code>/api/skills/my</code>.
               </p>
             </div>
             <button
+              className="app-button app-button-secondary"
               type="button"
               style={secondaryButtonStyle}
               onClick={() => queryClient.invalidateQueries({ queryKey: SKILLS_QUERY_KEY })}
@@ -345,15 +344,15 @@ export default function Skills() {
           {isLoading ? <p style={{ margin: 0 }}>Loading skills...</p> : null}
 
           {isError ? (
-            <p style={{ margin: 0, color: '#b91c1c' }}>
+            <p className="app-feedback-error">
               {getErrorMessage(error, 'Unable to load skills.')}
             </p>
           ) : null}
 
           {!isLoading && !isError && skills.length === 0 ? (
-            <div style={emptyStateStyle}>
+            <div className="app-empty-state" style={emptyStateStyle}>
               <h3 style={{ marginTop: 0 }}>No skills yet</h3>
-              <p style={{ margin: 0, color: '#475569' }}>
+              <p className="app-subtle-text" style={{ margin: 0 }}>
                 Create your first skill above and it will appear here.
               </p>
             </div>
@@ -366,7 +365,7 @@ export default function Skills() {
                   practiceSkillMutation.isPending && practiceSkillMutation.variables === skill.id;
 
                 return (
-                  <article key={skill.id} style={skillCardStyle}>
+                  <article key={skill.id} className="app-item-card" style={skillCardStyle}>
                     <div>
                       <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>
                         {skill.category || 'Uncategorized'}
@@ -386,6 +385,7 @@ export default function Skills() {
 
                     <div>
                       <button
+                        className="app-button"
                         type="button"
                         style={buttonStyle}
                         onClick={() => practiceSkillMutation.mutate(skill.id)}
@@ -401,7 +401,7 @@ export default function Skills() {
           ) : null}
 
           {practiceSkillMutation.isError ? (
-            <p style={{ marginTop: '1rem', marginBottom: 0, color: '#b91c1c' }}>
+            <p className="app-feedback-error" style={{ marginTop: '1rem' }}>
               {getErrorMessage(practiceSkillMutation.error, 'Unable to log practice right now.')}
             </p>
           ) : null}

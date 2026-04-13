@@ -7,27 +7,6 @@ import CreditDisplay, { CURRENT_USER_QUERY_KEY } from '../components/CreditDispl
 const MARKETPLACE_SKILLS_QUERY_KEY = ['marketplace-skills'];
 const TRADES_QUERY_KEY = ['trades'];
 
-const pageStyle = {
-  minHeight: '100vh',
-  padding: '2rem',
-  backgroundColor: '#f5f5f5',
-};
-
-const layoutStyle = {
-  maxWidth: '1180px',
-  margin: '0 auto',
-  display: 'grid',
-  gap: '1.5rem',
-};
-
-const panelStyle = {
-  backgroundColor: '#ffffff',
-  border: '1px solid #d4d4d8',
-  borderRadius: '16px',
-  padding: '1.5rem',
-  boxShadow: '0 10px 30px rgba(15, 23, 42, 0.05)',
-};
-
 const headerRowStyle = {
   display: 'flex',
   justifyContent: 'space-between',
@@ -36,122 +15,14 @@ const headerRowStyle = {
   flexWrap: 'wrap',
 };
 
-const sectionHeaderStyle = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: '1rem',
-  flexWrap: 'wrap',
-  marginBottom: '1rem',
-};
-
-const gridStyle = {
-  display: 'grid',
-  gap: '1rem',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))',
-};
-
-const tradeGridStyle = {
-  display: 'grid',
-  gap: '1rem',
-};
-
-const cardStyle = {
-  border: '1px solid #e2e8f0',
-  borderRadius: '14px',
-  padding: '1rem',
-  backgroundColor: '#f8fafc',
-  display: 'grid',
-  gap: '0.85rem',
-  textAlign: 'left',
-};
-
-const badgeRowStyle = {
-  display: 'flex',
-  gap: '0.5rem',
-  flexWrap: 'wrap',
-};
-
-const badgeStyle = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: '0.3rem 0.65rem',
-  borderRadius: '999px',
-  backgroundColor: '#e2e8f0',
-  color: '#0f172a',
-  fontSize: '0.82rem',
-  fontWeight: 600,
-};
-
-const statusStyles = {
-  PENDING: { backgroundColor: '#fef3c7', color: '#92400e' },
-  ACTIVE: { backgroundColor: '#dcfce7', color: '#166534' },
-  COMPLETED: { backgroundColor: '#e0e7ff', color: '#3730a3' },
-};
-
-const buttonStyle = {
-  padding: '0.8rem 1rem',
-  borderRadius: '10px',
-  border: 'none',
-  backgroundColor: '#2563eb',
-  color: '#ffffff',
-  fontWeight: 600,
-  cursor: 'pointer',
-};
-
-const secondaryButtonStyle = {
-  ...buttonStyle,
-  backgroundColor: '#0f172a',
-};
-
-const subtleButtonStyle = {
-  ...buttonStyle,
-  backgroundColor: '#1d4ed8',
-};
-
-const formGridStyle = {
-  display: 'grid',
-  gap: '1rem',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-};
-
-const inputStyle = {
-  width: '100%',
-  padding: '0.8rem 0.9rem',
-  borderRadius: '10px',
-  border: '1px solid #cbd5e1',
-  boxSizing: 'border-box',
-  font: 'inherit',
-  marginTop: '0.35rem',
-};
-
 const fullWidthStyle = {
   gridColumn: '1 / -1',
 };
 
-const emptyStateStyle = {
-  padding: '2rem',
-  borderRadius: '14px',
-  border: '1px dashed #cbd5e1',
-  backgroundColor: '#f8fafc',
-};
-
-const feedbackSuccessStyle = {
-  margin: 0,
-  color: '#166534',
-  backgroundColor: '#dcfce7',
-  border: '1px solid #86efac',
-  borderRadius: '12px',
-  padding: '0.85rem 1rem',
-};
-
-const feedbackErrorStyle = {
-  margin: 0,
-  color: '#991b1b',
-  backgroundColor: '#fef2f2',
-  border: '1px solid #fecaca',
-  borderRadius: '12px',
-  padding: '0.85rem 1rem',
+const tradeStatusToChipClassName = {
+  PENDING: 'app-chip app-chip-pending',
+  ACTIVE: 'app-chip app-chip-active',
+  COMPLETED: 'app-chip app-chip-completed',
 };
 
 function getErrorMessage(error, fallbackMessage) {
@@ -339,19 +210,19 @@ export default function Trades() {
   };
 
   return (
-    <main style={pageStyle}>
-      <section style={layoutStyle}>
+    <main className="app-page">
+      <section className="app-layout">
         <div>
           <AppNavigation />
 
-          <header style={panelStyle}>
+          <header className="app-panel app-hero-panel app-panel-soft">
             <div style={headerRowStyle}>
               <div>
-                <p style={{ marginBottom: '0.5rem', color: '#475569' }}>
+                <p className="app-eyebrow">
                   Trade Marketplace
                 </p>
                 <h1 style={{ marginTop: 0, marginBottom: '0.75rem' }}>Find skills and manage live trades</h1>
-                <p style={{ margin: 0, color: '#475569' }}>
+                <p className="app-subtle-text" style={{ margin: 0 }}>
                   Browse offered skills, request sessions, and act on trades tied to your account.
                 </p>
               </div>
@@ -360,24 +231,24 @@ export default function Trades() {
             </div>
 
             {isCurrentUserError ? (
-              <p style={{ ...feedbackErrorStyle, marginTop: '1rem' }}>
+              <p className="app-feedback-error" style={{ marginTop: '1rem' }}>
                 {getErrorMessage(currentUserError, 'Unable to load your profile.')}
               </p>
             ) : null}
           </header>
         </div>
 
-        <section style={panelStyle}>
-          <div style={sectionHeaderStyle}>
+        <section className="app-panel">
+          <div className="app-section-header">
             <div>
               <h2 style={{ margin: 0 }}>Marketplace</h2>
-              <p style={{ margin: '0.35rem 0 0', color: '#475569' }}>
+              <p className="app-subtle-text" style={{ margin: '0.35rem 0 0' }}>
                 Offered skills returned by <code>/api/skills/marketplace</code>.
               </p>
             </div>
             <button
+              className="app-button app-button-secondary"
               type="button"
-              style={secondaryButtonStyle}
               onClick={() => queryClient.invalidateQueries({ queryKey: MARKETPLACE_SKILLS_QUERY_KEY })}
               disabled={isMarketplaceLoading}
             >
@@ -388,48 +259,48 @@ export default function Trades() {
           {isMarketplaceLoading ? <p style={{ margin: 0 }}>Loading marketplace skills...</p> : null}
 
           {isMarketplaceError ? (
-            <p style={{ margin: 0, color: '#b91c1c' }}>
+            <p className="app-feedback-error">
               {getErrorMessage(marketplaceError, 'Unable to load marketplace skills.')}
             </p>
           ) : null}
 
           {!isMarketplaceLoading && !isMarketplaceError && marketplaceSkills.length === 0 ? (
-            <div style={emptyStateStyle}>
+            <div className="app-empty-state">
               <h3 style={{ marginTop: 0 }}>No marketplace skills yet</h3>
-              <p style={{ margin: 0, color: '#475569' }}>
+              <p className="app-subtle-text" style={{ margin: 0 }}>
                 Once other users add offered skills, they will appear here for trading.
               </p>
             </div>
           ) : null}
 
           {!isMarketplaceLoading && !isMarketplaceError && marketplaceSkills.length > 0 ? (
-            <div style={gridStyle}>
+            <div className="app-card-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))' }}>
               {marketplaceSkills.map((skill) => {
                 const isSelected = selectedSkill?.id === skill.id;
 
                 return (
-                  <article key={skill.id} style={cardStyle}>
+                  <article key={skill.id} className="app-item-card" style={{ display: 'grid', gap: '0.9rem', textAlign: 'left' }}>
                     <div>
-                      <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>
+                      <p className="app-meta-text">
                         {skill.category || 'Uncategorized'}
                       </p>
                       <h3 style={{ margin: '0.35rem 0 0' }}>{skill.title}</h3>
                     </div>
 
-                    <div style={badgeRowStyle}>
-                      <span style={badgeStyle}>{skill.skillCategory ?? 'UNKNOWN'}</span>
-                      <span style={badgeStyle}>{skill.creditValue ?? 0} credits</span>
+                    <div className="app-chip-row">
+                      <span className="app-chip">{skill.skillCategory ?? 'UNKNOWN'}</span>
+                      <span className="app-chip">{skill.creditValue ?? 0} credits</span>
                     </div>
 
-                    <p style={{ margin: 0, color: '#475569' }}>{skill.description}</p>
+                    <p className="app-subtle-text">{skill.description}</p>
 
-                    <div style={{ color: '#334155', display: 'grid', gap: '0.25rem' }}>
+                    <div className="app-detail-list">
                       <span>Provider: {skill.provider?.name ?? 'Unknown'}</span>
                       <span>{skill.provider?.email ?? 'No email available'}</span>
                     </div>
 
                     <div>
-                      <button type="button" style={buttonStyle} onClick={() => handleSelectSkill(skill)}>
+                      <button className="app-button" type="button" onClick={() => handleSelectSkill(skill)}>
                         {isSelected ? 'Selected' : 'Request Trade'}
                       </button>
                     </div>
@@ -440,54 +311,47 @@ export default function Trades() {
           ) : null}
         </section>
 
-        <section style={panelStyle}>
+        <section className="app-panel">
           <h2 style={{ marginTop: 0 }}>Request Trade</h2>
-          <p style={{ marginTop: 0, color: '#475569' }}>
+          <p className="app-subtle-text" style={{ marginTop: 0 }}>
             Choose a marketplace skill, then schedule a session request.
           </p>
 
           {selectedSkill ? (
-            <div
-              style={{
-                border: '1px solid #bfdbfe',
-                backgroundColor: '#eff6ff',
-                borderRadius: '14px',
-                padding: '1rem',
-                marginBottom: '1rem',
-              }}
-            >
+            <div className="app-highlight-card" style={{ marginBottom: '1rem' }}>
               <p style={{ margin: 0, color: '#1d4ed8', fontWeight: 700 }}>{selectedSkill.title}</p>
               <p style={{ marginTop: '0.3rem', color: '#334155' }}>
                 {selectedSkill.provider?.name} ({selectedSkill.provider?.email}) | {selectedSkill.creditValue ?? 0} credits
               </p>
             </div>
           ) : (
-            <div style={{ ...emptyStateStyle, marginBottom: '1rem' }}>
+            <div className="app-empty-state" style={{ marginBottom: '1rem' }}>
               <h3 style={{ marginTop: 0 }}>Select a marketplace skill</h3>
-              <p style={{ margin: 0, color: '#475569' }}>
+              <p className="app-subtle-text" style={{ margin: 0 }}>
                 Use the Request Trade button on a marketplace card to prefill this form.
               </p>
             </div>
           )}
 
-          <form onSubmit={handleCreateTrade} style={formGridStyle}>
-            <div>
-              <label htmlFor="scheduledTime">Scheduled Time</label>
+          <form className="app-form-grid" onSubmit={handleCreateTrade}>
+            <div className="field-group">
+              <label className="field-label" htmlFor="scheduledTime">Scheduled Time</label>
               <input
+                className="app-input"
                 id="scheduledTime"
                 name="scheduledTime"
                 type="datetime-local"
                 value={formData.scheduledTime}
                 onChange={handleFormChange}
-                style={inputStyle}
                 required
                 disabled={!selectedSkill || createTradeMutation.isPending}
               />
             </div>
 
-            <div>
-              <label htmlFor="duration">Duration</label>
+            <div className="field-group">
+              <label className="field-label" htmlFor="duration">Duration</label>
               <input
+                className="app-input"
                 id="duration"
                 name="duration"
                 type="number"
@@ -495,36 +359,35 @@ export default function Trades() {
                 step="1"
                 value={formData.duration}
                 onChange={handleFormChange}
-                style={inputStyle}
                 required
                 disabled={!selectedSkill || createTradeMutation.isPending}
               />
             </div>
 
             {createTradeMutation.isError ? (
-              <p style={{ ...fullWidthStyle, ...feedbackErrorStyle }}>
+              <p className="app-feedback-error" style={fullWidthStyle}>
                 {getErrorMessage(createTradeMutation.error, 'Unable to create trade right now.')}
               </p>
             ) : null}
 
             {createTradeMutation.isSuccess ? (
-              <p style={{ ...fullWidthStyle, ...feedbackSuccessStyle }}>
+              <p className="app-feedback-success" style={fullWidthStyle}>
                 Trade request created successfully.
               </p>
             ) : null}
 
-            <div style={{ ...fullWidthStyle, display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div className="app-actions-row" style={fullWidthStyle}>
               <button
+                className="app-button"
                 type="submit"
-                style={buttonStyle}
                 disabled={!selectedSkill || createTradeMutation.isPending}
               >
                 {createTradeMutation.isPending ? 'Submitting...' : 'Submit Trade Request'}
               </button>
 
               <button
+                className="app-button app-button-secondary"
                 type="button"
-                style={secondaryButtonStyle}
                 onClick={handleResetRequest}
                 disabled={createTradeMutation.isPending}
               >
@@ -534,17 +397,17 @@ export default function Trades() {
           </form>
         </section>
 
-        <section style={panelStyle}>
-          <div style={sectionHeaderStyle}>
+        <section className="app-panel">
+          <div className="app-section-header">
             <div>
               <h2 style={{ margin: 0 }}>My Trades</h2>
-              <p style={{ margin: '0.35rem 0 0', color: '#475569' }}>
+              <p className="app-subtle-text" style={{ margin: '0.35rem 0 0' }}>
                 Trades where you are the requester or provider from <code>/api/trades</code>.
               </p>
             </div>
             <button
+              className="app-button app-button-secondary"
               type="button"
-              style={secondaryButtonStyle}
               onClick={() => queryClient.invalidateQueries({ queryKey: TRADES_QUERY_KEY })}
               disabled={isTradesLoading}
             >
@@ -555,30 +418,35 @@ export default function Trades() {
           {isTradesLoading ? <p style={{ margin: 0 }}>Loading trades...</p> : null}
 
           {isTradesError ? (
-            <p style={feedbackErrorStyle}>
+            <p className="app-feedback-error">
               {getErrorMessage(tradesError, 'Unable to load trades.')}
             </p>
           ) : null}
 
           {!isTradesLoading && !isTradesError ? (
-            <div style={{ display: 'grid', gap: '1.5rem' }}>
+            <div className="app-stack-lg">
               {['PENDING', 'ACTIVE', 'COMPLETED'].map((status) => {
                 const tradesForStatus = groupedTrades[status];
+                const statusClassName =
+                  tradeStatusToChipClassName[status] ?? 'app-chip';
 
                 return (
                   <section key={status}>
-                    <h3 style={{ marginTop: 0, marginBottom: '0.75rem' }}>
-                      {status.charAt(0) + status.slice(1).toLowerCase()}
-                    </h3>
+                    <div className="app-section-header">
+                      <h3 style={{ marginTop: 0 }}>
+                        {status.charAt(0) + status.slice(1).toLowerCase()}
+                      </h3>
+                      <span className={statusClassName}>{tradesForStatus.length} trade(s)</span>
+                    </div>
 
                     {tradesForStatus.length === 0 ? (
-                      <div style={emptyStateStyle}>
-                        <p style={{ margin: 0, color: '#475569' }}>
+                      <div className="app-empty-state">
+                        <p className="app-subtle-text" style={{ margin: 0 }}>
                           No {status.toLowerCase()} trades right now.
                         </p>
                       </div>
                     ) : (
-                      <div style={tradeGridStyle}>
+                      <div className="app-card-grid">
                         {tradesForStatus.map((trade) => {
                           const isProvider = currentUser?.id === trade.provider?.id;
                           const isRequester = currentUser?.id === trade.requester?.id;
@@ -589,20 +457,20 @@ export default function Trades() {
                             acceptTradeMutation.isPending && acceptTradeMutation.variables === trade.id;
 
                           return (
-                            <article key={trade.id} style={cardStyle}>
-                              <div style={{ ...sectionHeaderStyle, marginBottom: 0 }}>
+                            <article key={trade.id} className="app-item-card" style={{ display: 'grid', gap: '0.9rem' }}>
+                              <div className="app-section-header" style={{ marginBottom: 0 }}>
                                 <div>
-                                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>
+                                  <p className="app-meta-text">
                                     {trade.skill?.creditValue ?? 0} credits
                                   </p>
                                   <h3 style={{ margin: '0.35rem 0 0' }}>{trade.skill?.title ?? 'Untitled skill'}</h3>
                                 </div>
-                                <span style={{ ...badgeStyle, ...(statusStyles[trade.status] ?? {}) }}>
+                                <span className={tradeStatusToChipClassName[trade.status] ?? 'app-chip'}>
                                   {trade.status}
                                 </span>
                               </div>
 
-                              <div style={{ color: '#334155', display: 'grid', gap: '0.35rem' }}>
+                              <div className="app-detail-list">
                                 <span>
                                   Requester: {trade.requester?.name ?? 'Unknown'} ({trade.requester?.email ?? 'No email'})
                                 </span>
@@ -617,8 +485,8 @@ export default function Trades() {
                               {trade.status === 'PENDING' && isProvider ? (
                                 <div>
                                   <button
+                                    className="app-button"
                                     type="button"
-                                    style={buttonStyle}
                                     onClick={() => handleAcceptTrade(trade.id)}
                                     disabled={isAcceptingCurrentTrade}
                                   >
@@ -628,10 +496,11 @@ export default function Trades() {
                               ) : null}
 
                               {trade.status === 'ACTIVE' && isRequester ? (
-                                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                                  <div>
-                                    <label htmlFor={`rating-${trade.id}`}>Rating</label>
+                                <div className="app-actions-row">
+                                  <div className="field-group">
+                                    <label className="field-label" htmlFor={`rating-${trade.id}`}>Rating</label>
                                     <input
+                                      className="app-input"
                                       id={`rating-${trade.id}`}
                                       type="number"
                                       min="1"
@@ -639,14 +508,14 @@ export default function Trades() {
                                       step="1"
                                       value={pendingRatingValue}
                                       onChange={(event) => handleRatingChange(trade.id, event.target.value)}
-                                      style={{ ...inputStyle, marginTop: '0.35rem', width: '110px' }}
+                                      style={{ width: '110px' }}
                                       disabled={isCompletingCurrentTrade}
                                     />
                                   </div>
 
                                   <button
+                                    className="app-button app-button-subtle"
                                     type="button"
-                                    style={subtleButtonStyle}
                                     onClick={() => handleCompleteTrade(trade.id, Number(pendingRatingValue))}
                                     disabled={isCompletingCurrentTrade}
                                   >
@@ -666,25 +535,25 @@ export default function Trades() {
           ) : null}
 
           {acceptTradeMutation.isError ? (
-            <p style={{ ...feedbackErrorStyle, marginTop: '1rem' }}>
+            <p className="app-feedback-error" style={{ marginTop: '1rem' }}>
               {getErrorMessage(acceptTradeMutation.error, 'Unable to accept this trade.')}
             </p>
           ) : null}
 
           {acceptTradeMutation.isSuccess ? (
-            <p style={{ ...feedbackSuccessStyle, marginTop: '1rem' }}>
+            <p className="app-feedback-success" style={{ marginTop: '1rem' }}>
               Trade accepted successfully.
             </p>
           ) : null}
 
           {completeTradeMutation.isError ? (
-            <p style={{ ...feedbackErrorStyle, marginTop: '1rem' }}>
+            <p className="app-feedback-error" style={{ marginTop: '1rem' }}>
               {getErrorMessage(completeTradeMutation.error, 'Unable to complete this trade.')}
             </p>
           ) : null}
 
           {completeTradeMutation.isSuccess ? (
-            <p style={{ ...feedbackSuccessStyle, marginTop: '1rem' }}>
+            <p className="app-feedback-success" style={{ marginTop: '1rem' }}>
               Trade completed and credits refreshed.
             </p>
           ) : null}

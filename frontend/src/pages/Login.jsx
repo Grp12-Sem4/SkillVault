@@ -1,30 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig.js';
+import AuthShell from '../components/AuthShell.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-
-const formStyle = {
-  display: 'grid',
-  gap: '0.75rem',
-  width: '100%',
-  maxWidth: '360px',
-};
-
-const pageStyle = {
-  minHeight: '100vh',
-  display: 'grid',
-  placeItems: 'center',
-  padding: '2rem',
-};
-
-const cardStyle = {
-  width: '100%',
-  maxWidth: '420px',
-  padding: '2rem',
-  border: '1px solid #d4d4d8',
-  borderRadius: '12px',
-  backgroundColor: '#ffffff',
-};
 
 export default function Login() {
   const navigate = useNavigate();
@@ -67,12 +45,21 @@ export default function Login() {
   };
 
   return (
-    <main style={pageStyle}>
-      <section style={cardStyle}>
-        <h1>Login</h1>
-        <form onSubmit={handleSubmit} style={formStyle}>
-          <label htmlFor="email">Email</label>
+    <AuthShell
+      eyebrow="Skill Vault"
+      title="Welcome back"
+      subtitle="Sign in to access your dashboard, personal skills, knowledge tracker, and live trades."
+      footer={(
+        <p>
+          Need an account? <Link className="auth-link" to="/register">Register</Link>
+        </p>
+      )}
+    >
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="field-group">
+          <label className="field-label" htmlFor="email">Email</label>
           <input
+            className="auth-input"
             id="email"
             name="email"
             type="email"
@@ -81,9 +68,12 @@ export default function Login() {
             autoComplete="email"
             required
           />
+        </div>
 
-          <label htmlFor="password">Password</label>
+        <div className="field-group">
+          <label className="field-label" htmlFor="password">Password</label>
           <input
+            className="auth-input"
             id="password"
             name="password"
             type="password"
@@ -92,18 +82,14 @@ export default function Login() {
             autoComplete="current-password"
             required
           />
+        </div>
 
-          {error ? <p style={{ color: '#b91c1c', margin: 0 }}>{error}</p> : null}
+        {error ? <p className="app-feedback-error">{error}</p> : null}
 
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-
-        <p style={{ marginTop: '1rem' }}>
-          Need an account? <Link to="/register">Register</Link>
-        </p>
-      </section>
-    </main>
+        <button className="app-button" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Logging in...' : 'Login'}
+        </button>
+      </form>
+    </AuthShell>
   );
 }

@@ -80,17 +80,19 @@ export default function Dashboard() {
   const userIdentifier = user?.email ?? user?.sub ?? 'User';
 
   return (
-    <main style={pageStyle}>
-      <section style={panelStyle}>
+    <main className="app-page" style={pageStyle}>
+      <section className="app-layout">
+        <div className="app-panel app-hero-panel app-panel-soft" style={panelStyle}>
         <AppNavigation />
 
         <div style={heroStyle}>
           <div style={{ maxWidth: '540px' }}>
+            <p className="app-eyebrow">Overview</p>
             <h1 style={{ marginTop: 0, marginBottom: '0.75rem' }}>Dashboard</h1>
-            <p style={{ margin: 0, color: '#475569' }}>
+            <p className="app-subtle-text" style={{ margin: 0 }}>
               Welcome to Skill Vault, {userIdentifier}.
             </p>
-            <p style={{ marginTop: '0.9rem', color: '#475569' }}>
+            <p className="app-subtle-text" style={{ marginTop: '0.9rem' }}>
               Skill Vault is a demo app for tracking skills, keeping knowledge fresh, and exchanging help through a credit-based trade marketplace.
             </p>
           </div>
@@ -100,19 +102,20 @@ export default function Dashboard() {
 
         <section>
           <h2 style={{ marginTop: 0, marginBottom: '0.75rem' }}>Main Areas</h2>
-          <p style={{ margin: 0, color: '#475569' }}>
+          <p className="app-subtle-text" style={{ margin: 0 }}>
             Use the sections below to move through the demo quickly.
           </p>
 
           <div style={actionGridStyle}>
             {ACTIONS.map((action) => (
-              <Link key={action.to} to={action.to} style={actionCardStyle}>
+              <Link key={action.to} to={action.to} className="app-link-card" style={actionCardStyle}>
                 <p style={actionTitleStyle}>{action.title}</p>
                 <p style={actionCopyStyle}>{action.description}</p>
               </Link>
             ))}
           </div>
         </section>
+        </div>
       </section>
     </main>
   );

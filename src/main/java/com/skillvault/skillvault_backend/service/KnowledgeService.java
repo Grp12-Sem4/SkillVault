@@ -27,7 +27,7 @@ public class KnowledgeService {
         this.historyRepository = historyRepository;
     }
 
-    /**
+    /*
      * Create a new knowledge topic
      */
     public KnowledgeTopic createTopic(KnowledgeTopic topic) {
@@ -41,7 +41,7 @@ public class KnowledgeService {
         return knowledgeTopicRepository.save(topic);
     }
 
-    /**
+    /*
      * Review a topic and restore mastery on the 0-100 scale.
      */
     public KnowledgeTopic reviewTopic(UUID topicId) {
@@ -76,7 +76,7 @@ public class KnowledgeService {
         return knowledgeTopicRepository.save(topic);
     }
 
-    /**
+    /*
      * Apply forgetting curve decay to a single topic.
      */
     public KnowledgeTopic applyDecay(UUID topicId) {
@@ -86,7 +86,7 @@ public class KnowledgeService {
         return knowledgeTopicRepository.save(topic);
     }
 
-    /**
+    /*
      * Apply decay to all topics in the system.
      */
     public void applyDecayToAllTopics() {
@@ -103,14 +103,14 @@ public class KnowledgeService {
         knowledgeTopicRepository.saveAll(topics);
     }
 
-    /**
+    /*
      * Get topics needing revision
      */
     public List<KnowledgeTopic> getTopicsNeedingRevision() {
         return knowledgeTopicRepository.findByStatus(KnowledgeStatus.NEEDS_REVISION);
     }
 
-    /**
+    /*
      * Get topics for a specific user
      */
     public List<KnowledgeTopic> getTopicsByUser(UUID userId) {

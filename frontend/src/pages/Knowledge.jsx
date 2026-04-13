@@ -166,28 +166,29 @@ export default function Knowledge() {
   };
 
   return (
-    <main style={pageStyle}>
-      <section style={layoutStyle}>
+    <main className="app-page" style={pageStyle}>
+      <section className="app-layout" style={layoutStyle}>
         <div>
           <AppNavigation />
 
-          <header style={panelStyle}>
-            <p style={{ marginBottom: '0.5rem', color: '#475569' }}>
+          <header className="app-panel app-hero-panel app-panel-soft" style={panelStyle}>
+            <p className="app-eyebrow">
               Signed in as {user?.email ?? user?.sub ?? 'authenticated user'}
             </p>
             <h1 style={{ marginTop: 0, marginBottom: '0.75rem' }}>Knowledge Vault</h1>
-            <p style={{ margin: 0, color: '#475569' }}>
+            <p className="app-subtle-text" style={{ margin: 0 }}>
               Create new knowledge topics and review the ones that the backend has flagged for revision.
             </p>
           </header>
         </div>
 
-        <section style={panelStyle}>
+        <section className="app-panel" style={panelStyle}>
           <h2 style={{ marginTop: 0 }}>Create Topic</h2>
           <form onSubmit={handleSubmit} style={formStyle}>
-            <div>
-              <label htmlFor="title">Title</label>
+            <div className="field-group">
+              <label className="field-label" htmlFor="title">Title</label>
               <input
+                className="app-input"
                 id="title"
                 name="title"
                 type="text"
@@ -198,9 +199,10 @@ export default function Knowledge() {
               />
             </div>
 
-            <div>
-              <label htmlFor="subject">Subject</label>
+            <div className="field-group">
+              <label className="field-label" htmlFor="subject">Subject</label>
               <input
+                className="app-input"
                 id="subject"
                 name="subject"
                 type="text"
@@ -211,9 +213,10 @@ export default function Knowledge() {
               />
             </div>
 
-            <div>
-              <label htmlFor="content">Content</label>
+            <div className="field-group">
+              <label className="field-label" htmlFor="content">Content</label>
               <textarea
+                className="app-input app-textarea"
                 id="content"
                 name="content"
                 value={formData.content}
@@ -224,17 +227,18 @@ export default function Knowledge() {
             </div>
 
             {createTopicMutation.isError ? (
-              <p style={{ margin: 0, color: '#b91c1c' }}>
+              <p className="app-feedback-error">
                 {getErrorMessage(createTopicMutation.error, 'Unable to create knowledge topic right now.')}
               </p>
             ) : null}
 
             {createTopicMutation.isSuccess ? (
-              <p style={{ margin: 0, color: '#15803d' }}>Knowledge topic created.</p>
+              <p className="app-feedback-success">Knowledge topic created.</p>
             ) : null}
 
             <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
               <button
+                className="app-button"
                 type="submit"
                 style={buttonStyle}
                 disabled={createTopicMutation.isPending}
@@ -245,24 +249,16 @@ export default function Knowledge() {
           </form>
         </section>
 
-        <section style={panelStyle}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '1rem',
-              marginBottom: '1rem',
-              flexWrap: 'wrap',
-            }}
-          >
+        <section className="app-panel" style={panelStyle}>
+          <div className="app-section-header">
             <div>
               <h2 style={{ margin: 0 }}>Needs Revision</h2>
-              <p style={{ margin: '0.35rem 0 0', color: '#475569' }}>
+              <p className="app-subtle-text" style={{ margin: '0.35rem 0 0' }}>
                 Topics returned by <code>/api/knowledge/needs-revision</code>.
               </p>
             </div>
             <button
+              className="app-button app-button-secondary"
               type="button"
               style={secondaryButtonStyle}
               onClick={() => queryClient.invalidateQueries({ queryKey: KNOWLEDGE_QUERY_KEY })}
@@ -275,15 +271,15 @@ export default function Knowledge() {
           {isLoading ? <p style={{ margin: 0 }}>Loading topics...</p> : null}
 
           {isError ? (
-            <p style={{ margin: 0, color: '#b91c1c' }}>
+            <p className="app-feedback-error">
               {getErrorMessage(error, 'Unable to load knowledge topics.')}
             </p>
           ) : null}
 
           {!isLoading && !isError && topics.length === 0 ? (
-            <div style={emptyStateStyle}>
+            <div className="app-empty-state" style={emptyStateStyle}>
               <h3 style={{ marginTop: 0 }}>Nothing needs review right now</h3>
-              <p style={{ margin: 0, color: '#475569' }}>
+              <p className="app-subtle-text" style={{ margin: 0 }}>
                 Once the backend flags topics for revision, they will appear here.
               </p>
             </div>
@@ -296,7 +292,7 @@ export default function Knowledge() {
                   reviewTopicMutation.isPending && reviewTopicMutation.variables === topic.id;
 
                 return (
-                  <article key={topic.id} style={topicCardStyle}>
+                  <article key={topic.id} className="app-item-card" style={topicCardStyle}>
                     <div>
                       <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>{topic.subject}</p>
                       <h3 style={{ margin: '0.35rem 0 0' }}>{topic.title}</h3>
@@ -314,6 +310,7 @@ export default function Knowledge() {
 
                     <div>
                       <button
+                        className="app-button"
                         type="button"
                         style={buttonStyle}
                         onClick={() => reviewTopicMutation.mutate(topic.id)}
@@ -329,7 +326,7 @@ export default function Knowledge() {
           ) : null}
 
           {reviewTopicMutation.isError ? (
-            <p style={{ marginTop: '1rem', marginBottom: 0, color: '#b91c1c' }}>
+            <p className="app-feedback-error" style={{ marginTop: '1rem' }}>
               {getErrorMessage(reviewTopicMutation.error, 'Unable to mark the topic as reviewed.')}
             </p>
           ) : null}
