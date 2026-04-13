@@ -1,8 +1,11 @@
 package com.skillvault.skillvault_backend.service;
 
+import com.skillvault.skillvault_backend.dto.CreateKnowledgeTopicRequest;
+import com.skillvault.skillvault_backend.dto.KnowledgeTopicResponse;
 import com.skillvault.skillvault_backend.enums.KnowledgeStatus;
 import com.skillvault.skillvault_backend.model.KnowledgeRevisionHistory;
 import com.skillvault.skillvault_backend.model.KnowledgeTopic;
+import com.skillvault.skillvault_backend.model.User;
 import com.skillvault.skillvault_backend.repository.KnowledgeRevisionHistoryRepository;
 import com.skillvault.skillvault_backend.repository.KnowledgeTopicRepository;
 import org.springframework.stereotype.Service;
@@ -30,7 +33,12 @@ public class KnowledgeService {
     /*
      * Create a new knowledge topic
      */
-    public KnowledgeTopic createTopic(KnowledgeTopic topic) {
+    public KnowledgeTopicResponse createTopic(User owner, CreateKnowledgeTopicRequest request) {
+        KnowledgeTopic topic = new KnowledgeTopic();
+        topic.setOwner(owner);
+        topic.setTitle(request.title() != null ? request.title().trim() : null);
+        topic.setSubject(request.subject() != null ? request.subject().trim() : null);
+        topic.setContent(request.content() != null ? request.content().trim() : null);
         topic.setCreatedAt(topic.getCreatedAt() != null ? topic.getCreatedAt() : LocalDateTime.now());
         topic.setLastReviewed(topic.getLastReviewed() != null ? topic.getLastReviewed() : LocalDate.now());
         topic.setLastDecayCheck(topic.getLastDecayCheck() != null ? topic.getLastDecayCheck() : topic.getLastReviewed());
@@ -38,13 +46,13 @@ public class KnowledgeService {
         topic.setMasteryLevel(topic.getMasteryLevel() > 0 ? topic.getMasteryLevel() : 100.0);
         topic.setDecayRate(topic.getDecayRate() > 0 ? topic.getDecayRate() : 0.1);
 
-        return knowledgeTopicRepository.save(topic);
+        return toResponse(knowledgeTopicRepository.save(topic));
     }
 
     /*
      * Review a topic and restore mastery on the 0-100 scale.
      */
-    public KnowledgeTopic reviewTopic(UUID topicId) {
+    public KnowledgeTopicResponse reviewTopic(UUID topicId) {
         KnowledgeTopic topic = getTopicOrThrow(topicId);
 
         topic.setMasteryLevel(100.0);
@@ -52,11 +60,11 @@ public class KnowledgeService {
         topic.setLastDecayCheck(LocalDate.now());
         topic.setStatus(KnowledgeStatus.CURRENT);
 
-        return knowledgeTopicRepository.save(topic);
+        return toResponse(knowledgeTopicRepository.save(topic));
     }
 
     @Transactional
-    public KnowledgeTopic reviewTopic(UUID topicId, String newContent) {
+    public KnowledgeTopicResponse reviewTopic(UUID topicId, String newContent) {
         KnowledgeTopic topic = getTopicOrThrow(topicId);
 
         KnowledgeRevisionHistory history = new KnowledgeRevisionHistory();
@@ -73,17 +81,17 @@ public class KnowledgeService {
         topic.setLastDecayCheck(LocalDate.now());
         topic.setStatus(KnowledgeStatus.CURRENT);
 
-        return knowledgeTopicRepository.save(topic);
+        return toResponse(knowledgeTopicRepository.save(topic));
     }
 
     /*
      * Apply forgetting curve decay to a single topic.
      */
-    public KnowledgeTopic applyDecay(UUID topicId) {
+    public KnowledgeTopicResponse applyDecay(UUID topicId) {
         KnowledgeTopic topic = getTopicOrThrow(topicId);
         applyDecayState(topic);
 
-        return knowledgeTopicRepository.save(topic);
+        return toResponse(knowledgeTopicRepository.save(topic));
     }
 
     /*
@@ -106,15 +114,28 @@ public class KnowledgeService {
     /*
      * Get topics needing revision
      */
-    public List<KnowledgeTopic> getTopicsNeedingRevision() {
-        return knowledgeTopicRepository.findByStatus(KnowledgeStatus.NEEDS_REVISION);
+    public List<KnowledgeTopicResponse> getTopicsNeedingRevision(User owner) {
+        return knowledgeTopicRepository.findByOwner_IdAndStatusOrderByCreatedAtDesc(owner.getId(), KnowledgeStatus.NEEDS_REVISION)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     /*
      * Get topics for a specific user
      */
-    public List<KnowledgeTopic> getTopicsByUser(UUID userId) {
-        return knowledgeTopicRepository.findByOwnerId(userId);
+    public List<KnowledgeTopicResponse> getTopicsForUser(User owner) {
+        return knowledgeTopicRepository.findByOwner_IdOrderByCreatedAtDesc(owner.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<KnowledgeTopicResponse> getTopicsByUser(UUID userId) {
+        return knowledgeTopicRepository.findByOwner_IdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     private KnowledgeTopic getTopicOrThrow(UUID topicId) {
@@ -135,5 +156,21 @@ public class KnowledgeService {
         } else {
             topic.setStatus(KnowledgeStatus.CURRENT);
         }
+    }
+
+    public KnowledgeTopicResponse toResponse(KnowledgeTopic topic) {
+        return new KnowledgeTopicResponse(
+                topic.getTopicId(),
+                topic.getTitle(),
+                topic.getSubject(),
+                topic.getContent(),
+                topic.getStatus() != null ? topic.getStatus().name() : null,
+                topic.getMasteryLevel(),
+                topic.getDecayRate(),
+                topic.getLastReviewed(),
+                topic.getLastDecayCheck(),
+                topic.getCreatedAt(),
+                topic.getStatus() == KnowledgeStatus.NEEDS_REVISION
+        );
     }
 }

@@ -395,6 +395,12 @@ code {
   gap: 1rem;
 }
 
+.app-card-grid-compact {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
 .app-form-grid {
   display: grid;
   gap: 1rem;
@@ -459,11 +465,58 @@ code {
   color: #3730a3;
 }
 
+.app-chip-danger {
+  background: #ffe3e7;
+  color: #be123c;
+}
+
 .app-actions-row {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
   align-items: flex-end;
+}
+
+.app-inline-filter {
+  min-width: 180px;
+}
+
+.app-stat-card {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1rem;
+  border: 1px solid #d7e4f5;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fcfdff 0%, #f5f8fc 100%);
+}
+
+.app-stat-value {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--app-text);
+  line-height: 1;
+}
+
+.app-progress {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e3eaf5;
+}
+
+.app-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #4f7df0 0%, #2355d8 100%);
+}
+
+.app-progress-bar-low {
+  background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+}
+
+.app-progress-bar-danger {
+  background: linear-gradient(90deg, #fb7185 0%, #e11d48 100%);
 }
 
 .app-stack-lg {
