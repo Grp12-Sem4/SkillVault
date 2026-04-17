@@ -11,7 +11,7 @@ public class DecayEngine {
         this.knowledgeService = knowledgeService;
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 */5 * * * *")
     public void runDecayScan() {
         knowledgeService.applyDecayToAllTopics();
     }
