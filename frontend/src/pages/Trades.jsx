@@ -298,7 +298,15 @@ export default function Trades() {
                       <span>Provider: {skill.provider?.name ?? 'Unknown'}</span>
                       <span>{skill.provider?.email ?? 'No email available'}</span>
                     </div>
+                    <div className="app-chip-row">
+                      <span className="app-chip">
+                        {skill.averageRating?.toFixed(1) ?? 0} 
+                      </span>
 
+                      <span className="app-chip">
+                        Expertise: {skill.confidenceIndex?.toFixed(0) ?? 0}
+                      </span>
+                    </div>
                     <div>
                       <button className="app-button" type="button" onClick={() => handleSelectSkill(skill)}>
                         {isSelected ? 'Selected' : 'Request Trade'}

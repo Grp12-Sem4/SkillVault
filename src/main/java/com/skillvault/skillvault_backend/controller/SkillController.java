@@ -39,7 +39,16 @@ public class SkillController {
     }
 
     @PutMapping("/{skillId}/practice")
-    public Skill practiceSkill(@PathVariable UUID skillId, @RequestParam double hours) {
+    public Skill practiceSkill(@PathVariable UUID skillId,@RequestParam double hours,Principal principal) 
+    {
+        if (principal == null) 
+        {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+        }
+
+        User user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+
         return service.evaluateSkill(skillId, hours);
     }
 

@@ -12,5 +12,6 @@ public interface SkillRepository extends JpaRepository<Skill, UUID> {
     List<Skill> findByUser(User user);
 
     List<Skill> findByTypeAndUser_IdNot(SkillType type, UUID userId);
+    Optional<Skill> findByUserAndTitle(User user, String title);
 
 }

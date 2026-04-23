@@ -41,13 +41,21 @@ public abstract class Skill {
 
     private Double skillScore = 0.0;
 
-    private Double confidenceIndex = 100.0;
-
     private Integer usageFrequency = 0;
 
     private LocalDate lastUsed;
+    private Double averageRating = 0.0;
+    private Integer ratingCount = 0;
+    private Integer masteryLevel = 0;
+    private Double confidenceIndex = 0.0;
+    private Integer practiceCount = 0;
+    private Integer teachingCount = 0;
+    private java.time.LocalDateTime lastUsedAt;
 
-    @ManyToOne
+    @Enumerated(EnumType.STRING)
+    private DifficultyLevel difficultyLevel;
+    
+        @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 

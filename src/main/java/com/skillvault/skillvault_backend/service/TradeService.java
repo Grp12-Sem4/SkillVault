@@ -7,6 +7,7 @@ import com.skillvault.skillvault_backend.dto.UserSummaryResponse;
 import com.skillvault.skillvault_backend.enums.SkillType;
 import com.skillvault.skillvault_backend.enums.TradeStatus;
 import com.skillvault.skillvault_backend.model.Skill;
+import com.skillvault.skillvault_backend.model.TechnicalSkill;
 import com.skillvault.skillvault_backend.model.TradeSession;
 import com.skillvault.skillvault_backend.model.User;
 import com.skillvault.skillvault_backend.repository.SkillRepository;
@@ -18,6 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -116,7 +119,9 @@ public class TradeService {
         return toTradeResponse(tradeSessionRepository.save(tradeSession));
     }
 
-    public TradeResponse completeTrade(UUID tradeId, User actingUser, Integer rating) {
+    public TradeResponse completeTrade(UUID tradeId, User actingUser, Integer rating) 
+    {
+        System.out.println("COMPLETE TRADE CALLED");
         TradeSession tradeSession = tradeSessionRepository.findById(tradeId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Trade not found"));
 
@@ -133,6 +138,62 @@ public class TradeService {
         }
 
         creditService.transferCredits(tradeSession);
+        Skill providerSkill = tradeSession.getSkill();
+        User learner = tradeSession.getRequester();
+        Skill originalSkill = tradeSession.getSkill();
+
+        // check if learner already has this skill
+        Skill learnerSkill = skillRepository.findByUserAndTitle(learner, originalSkill.getTitle()).orElse(null);
+
+        if (learnerSkill == null) {
+            // create new skill for learner
+            Skill newSkill = new TechnicalSkill(); // or SoftSkill based on type
+
+            newSkill.setTitle(originalSkill.getTitle());
+            newSkill.setDescription(originalSkill.getDescription());
+            newSkill.setCategory(originalSkill.getCategory());
+            newSkill.setType(SkillType.REQUESTED);
+            newSkill.setUser(learner);
+            newSkill.setMasteryLevel(10); // beginner level
+            newSkill.setConfidenceIndex(30.0);
+            newSkill.setLastUsedAt(LocalDateTime.now());
+            skillRepository.save(newSkill);
+        } else {
+            // improve existing skill
+            int currentMastery = learnerSkill.getMasteryLevel() != null ? learnerSkill.getMasteryLevel() : 0;
+            learnerSkill.setMasteryLevel(Math.min(100, currentMastery + 5));
+
+            skillRepository.save(learnerSkill);
+        }
+        if (providerSkill != null) 
+        {
+            providerSkill.setTeachingCount((providerSkill.getTeachingCount() != null ? providerSkill.getTeachingCount() : 0) + 1);
+
+            providerSkill.setUsageFrequency((providerSkill.getUsageFrequency() != null ? providerSkill.getUsageFrequency() : 0) + 1);
+            double oldAvg = providerSkill.getAverageRating() != null ? providerSkill.getAverageRating() : 0.0;
+            int count = providerSkill.getRatingCount() != null ? providerSkill.getRatingCount() : 0;
+            double newAvg = ((oldAvg * count) + rating) / (count + 1);
+            providerSkill.setAverageRating(newAvg);
+            providerSkill.setRatingCount(count + 1);
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            long days = 0;
+            if (providerSkill.getLastUsedAt() != null) 
+            {
+                days = java.time.Duration.between(providerSkill.getLastUsedAt(), now).toDays();
+            }
+            //int recencyPenalty = (int) days * 2;
+            //int ratingBoost = rating;
+            int currentMastery = providerSkill.getMasteryLevel() != null ? providerSkill.getMasteryLevel() : 0;
+            //double currentConfidence = providerSkill.getConfidenceIndex() != null ? providerSkill.getConfidenceIndex() : 0;
+            //int currentUsage = providerSkill.getUsageFrequency() != null ? providerSkill.getUsageFrequency() : 0;
+            providerSkill.setMasteryLevel(Math.min(100, currentMastery + 5));
+            //providerSkill.setUsageFrequency(currentUsage + 1);
+            //int usageBonus = currentUsage / 5;
+            //double newConfidence = currentConfidence + ratingBoost + usageBonus - recencyPenalty;
+            providerSkill.setConfidenceIndex(skillService.calculateConfidence(providerSkill));
+            providerSkill.setLastUsedAt(java.time.LocalDateTime.now());
+            skillRepository.save(providerSkill);
+        }
         tradeSession.setRating(rating);
         tradeSession.setStatus(TradeStatus.COMPLETED);
 

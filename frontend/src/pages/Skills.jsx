@@ -128,6 +128,7 @@ export default function Skills() {
     creditValue: 1,
     type: 'OFFERED',
     skillCategory: 'TECHNICAL',
+    difficultyLevel: 'BEGINNER',
   });
 
   const {
@@ -189,6 +190,7 @@ export default function Skills() {
       creditValue: Number(formData.creditValue),
       type: formData.type,
       skillCategory: formData.skillCategory,
+      difficultyLevel: formData.difficultyLevel,
     });
   };
 
@@ -285,7 +287,21 @@ export default function Skills() {
                 <option value="SOFT">SOFT</option>
               </select>
             </div>
-
+            <div className="field-group">
+              <label className="field-label" htmlFor="difficultyLevel">Difficulty</label>
+              <select
+                className="app-input"
+                id="difficultyLevel"
+                name="difficultyLevel"
+                value={formData.difficultyLevel || "BEGINNER"}
+                onChange={handleChange}
+                style={inputStyle}
+              >
+                <option value="BEGINNER">BEGINNER</option>
+                <option value="INTERMEDIATE">INTERMEDIATE</option>
+                <option value="ADVANCED">ADVANCED</option>
+              </select>
+            </div>
             <div className="field-group" style={fullWidthStyle}>
               <label className="field-label" htmlFor="description">Description</label>
               <textarea
@@ -376,24 +392,47 @@ export default function Skills() {
                     <div style={metaRowStyle}>
                       <span style={badgeStyle}>{skill.type}</span>
                       <span style={badgeStyle}>{skill.skillCategory ?? 'UNKNOWN'}</span>
+                      <span style={badgeStyle}>{skill.difficultyLevel ?? "BEGINNER"}</span>
+                      {skill.type !== "OFFERED" && (
+                        <span style={badgeStyle}>
+                          Practice: {skill.practiceCount ?? 0}
+                        </span>
+                      )}
+
+                      {skill.type === "OFFERED" && (
+                        <span style={badgeStyle}>
+                          Teaching: {skill.teachingCount ?? 0}
+                        </span>
+                      )}
+                      <span style={badgeStyle}>Rating: {skill.averageRating?.toFixed(1) ?? 0} ({skill.ratingCount ?? 0})</span>
                       <span style={scoreBadgeStyle}>
                         Score: {typeof skill.skillScore === 'number' ? skill.skillScore.toFixed(1) : '0.0'}
                       </span>
+                      {skill.type === "OFFERED" ? (
+                        <span style={badgeStyle}>
+                          Expertise: {skill.confidenceIndex?.toFixed(0) ?? 0}
+                        </span>
+                      ) : (
+                        <span style={badgeStyle}>
+                          Mastery: {skill.masteryLevel ?? 0} / 100
+                        </span>
+                      )}
                     </div>
-
                     <p style={{ margin: 0, color: '#475569' }}>{skill.description}</p>
 
-                    <div>
-                      <button
-                        className="app-button"
-                        type="button"
-                        style={buttonStyle}
-                        onClick={() => practiceSkillMutation.mutate(skill.id)}
-                        disabled={isPracticingCurrentSkill}
-                      >
-                        {isPracticingCurrentSkill ? 'Logging...' : 'Log Practice (1 Hour)'}
-                      </button>
-                    </div>
+                      {skill.type !== "OFFERED" && (
+                        <div>
+                          <button
+                            className="app-button"
+                            type="button"
+                            style={buttonStyle}
+                            onClick={() => practiceSkillMutation.mutate(skill.id)}
+                            disabled={isPracticingCurrentSkill}
+                          >
+                            {isPracticingCurrentSkill ? 'Logging...' : 'Log Practice (1 Hour)'}
+                          </button>
+                        </div>
+                      )}
                   </article>
                 );
               })}
