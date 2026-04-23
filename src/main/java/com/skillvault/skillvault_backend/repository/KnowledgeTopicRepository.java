@@ -15,4 +15,5 @@ public interface KnowledgeTopicRepository extends JpaRepository<KnowledgeTopic, 
     List<KnowledgeTopic> findByOwner_IdOrderByCreatedAtDesc(UUID userId);
 
     List<KnowledgeTopic> findByOwner_IdAndStatusOrderByCreatedAtDesc(UUID userId, KnowledgeStatus status);
+    long countByOwner_IdAndStatus(UUID userId, KnowledgeStatus status);
 }

@@ -10,5 +10,6 @@ import java.util.UUID;
 public interface CreditTransactionRepository extends JpaRepository<CreditTransaction, UUID> {
 
     List<CreditTransaction> findByUser(User user);
+    List<CreditTransaction> findByUser_IdOrderByCreatedAtDesc(UUID userId);
 
 }
