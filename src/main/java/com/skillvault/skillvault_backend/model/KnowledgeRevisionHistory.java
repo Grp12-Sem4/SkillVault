@@ -24,6 +24,20 @@ public class KnowledgeRevisionHistory {
 
     private LocalDateTime editedAt;
 
+    private Double previousMasteryLevel;
+
+    private Double newMasteryLevel;
+
+    private Double previousStabilityDays;
+
+    private Double newStabilityDays;
+
+    private Integer recallScore;
+
+    private Integer confidenceScore;
+
+    private Integer responseTimeSeconds;
+
     @ManyToOne
     @JoinColumn(name="topic_id")
     private KnowledgeTopic topic;

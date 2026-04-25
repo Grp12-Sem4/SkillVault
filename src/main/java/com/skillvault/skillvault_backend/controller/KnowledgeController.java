@@ -2,7 +2,7 @@ package com.skillvault.skillvault_backend.controller;
 
 import com.skillvault.skillvault_backend.dto.CreateKnowledgeTopicRequest;
 import com.skillvault.skillvault_backend.dto.KnowledgeTopicResponse;
-import com.skillvault.skillvault_backend.model.KnowledgeTopic;
+import com.skillvault.skillvault_backend.dto.ReviewKnowledgeTopicRequest;
 import com.skillvault.skillvault_backend.model.User;
 import com.skillvault.skillvault_backend.repository.UserRepository;
 import com.skillvault.skillvault_backend.service.KnowledgeService;
@@ -39,21 +39,24 @@ public class KnowledgeController {
 
     // Review topic
     @PutMapping("/{topicId}/review")
-    public KnowledgeTopicResponse reviewTopic(@PathVariable UUID topicId) {
-        return knowledgeService.reviewTopic(topicId);
+    public KnowledgeTopicResponse reviewTopic(
+            @PathVariable UUID topicId,
+            @RequestBody(required = false) ReviewKnowledgeTopicRequest request
+    ) {
+        return request == null ? knowledgeService.reviewTopic(topicId) : knowledgeService.reviewTopic(topicId, request);
     }
 
-    // Alternative review route that also accepts updated study notes/content.
+    // Alternative review route that also accepts updated study notes or recall metadata.
     @PostMapping("/{topicId}/review")
     public KnowledgeTopicResponse reviewTopicWithContent(
             @PathVariable UUID topicId,
-            @RequestBody(required = false) String updatedContent
+            @RequestBody(required = false) ReviewKnowledgeTopicRequest request
     ) {
-        if (updatedContent == null || updatedContent.isBlank()) {
+        if (request == null) {
             return knowledgeService.reviewTopic(topicId);
         }
 
-        return knowledgeService.reviewTopic(topicId, updatedContent);
+        return knowledgeService.reviewTopic(topicId, request);
     }
 
     // Apply decay to a topic

@@ -2,6 +2,7 @@ package com.skillvault.skillvault_backend.service;
 
 import com.skillvault.skillvault_backend.dto.CreateKnowledgeTopicRequest;
 import com.skillvault.skillvault_backend.dto.KnowledgeTopicResponse;
+import com.skillvault.skillvault_backend.dto.ReviewKnowledgeTopicRequest;
 import com.skillvault.skillvault_backend.enums.KnowledgeStatus;
 import com.skillvault.skillvault_backend.model.KnowledgeRevisionHistory;
 import com.skillvault.skillvault_backend.model.KnowledgeTopic;
@@ -21,13 +22,16 @@ public class KnowledgeService {
 
     private final KnowledgeTopicRepository knowledgeTopicRepository;
     private final KnowledgeRevisionHistoryRepository historyRepository;
+    private final KnowledgeDecayEngine knowledgeDecayEngine;
 
     public KnowledgeService(
             KnowledgeTopicRepository knowledgeTopicRepository,
-            KnowledgeRevisionHistoryRepository historyRepository
+            KnowledgeRevisionHistoryRepository historyRepository,
+            KnowledgeDecayEngine knowledgeDecayEngine
     ) {
         this.knowledgeTopicRepository = knowledgeTopicRepository;
         this.historyRepository = historyRepository;
+        this.knowledgeDecayEngine = knowledgeDecayEngine;
     }
 
     /*
@@ -45,6 +49,8 @@ public class KnowledgeService {
         topic.setStatus(topic.getStatus() != null ? topic.getStatus() : KnowledgeStatus.CURRENT);
         topic.setMasteryLevel(topic.getMasteryLevel() > 0 ? topic.getMasteryLevel() : 100.0);
         topic.setDecayRate(topic.getDecayRate() > 0 ? topic.getDecayRate() : 0.1);
+        topic.ensureKnowledgeDefaults();
+        knowledgeDecayEngine.applyDecay(topic, LocalDate.now());
 
         return toResponse(knowledgeTopicRepository.save(topic));
     }
@@ -53,33 +59,43 @@ public class KnowledgeService {
      * Review a topic and restore mastery on the 0-100 scale.
      */
     public KnowledgeTopicResponse reviewTopic(UUID topicId) {
-        KnowledgeTopic topic = getTopicOrThrow(topicId);
-
-        topic.setMasteryLevel(100.0);
-        topic.setLastReviewed(LocalDate.now());
-        topic.setLastDecayCheck(LocalDate.now());
-        topic.setStatus(KnowledgeStatus.CURRENT);
-
-        return toResponse(knowledgeTopicRepository.save(topic));
+        return reviewTopic(topicId, (ReviewKnowledgeTopicRequest) null);
     }
 
     @Transactional
     public KnowledgeTopicResponse reviewTopic(UUID topicId, String newContent) {
+        return reviewTopic(topicId, new ReviewKnowledgeTopicRequest(newContent, null, null, null));
+    }
+
+    @Transactional
+    public KnowledgeTopicResponse reviewTopic(UUID topicId, ReviewKnowledgeTopicRequest request) {
         KnowledgeTopic topic = getTopicOrThrow(topicId);
+        topic.ensureKnowledgeDefaults();
+        String oldContent = topic.getContent();
+
+        String updatedContent = request != null && request.updatedContent() != null && !request.updatedContent().isBlank()
+                ? request.updatedContent().trim()
+                : null;
+        if (updatedContent != null) {
+            topic.setContent(updatedContent);
+            topic.setDecayRate(Math.max(0.03, topic.getDecayRate() * 0.93));
+        }
+
+        KnowledgeDecayEngine.ReviewOutcome reviewOutcome = knowledgeDecayEngine.processReview(topic, request, LocalDate.now());
 
         KnowledgeRevisionHistory history = new KnowledgeRevisionHistory();
-        history.setOldContent(topic.getContent());
-        history.setNewContent(newContent);
+        history.setOldContent(oldContent);
+        history.setNewContent(updatedContent != null ? updatedContent : topic.getContent());
         history.setEditedAt(LocalDateTime.now());
+        history.setPreviousMasteryLevel(reviewOutcome.masteryBeforeReview());
+        history.setNewMasteryLevel(topic.getMasteryLevel());
+        history.setPreviousStabilityDays(reviewOutcome.stabilityBeforeReview());
+        history.setNewStabilityDays(topic.getStabilityDays());
+        history.setRecallScore(reviewOutcome.effectiveRecallScore());
+        history.setConfidenceScore(request != null ? request.confidenceScore() : null);
+        history.setResponseTimeSeconds(request != null ? request.responseTimeSeconds() : null);
         history.setTopic(topic);
         historyRepository.save(history);
-
-        topic.setDecayRate(Math.max(0.01, topic.getDecayRate() * 0.85));
-        topic.setContent(newContent);
-        topic.setMasteryLevel(100.0);
-        topic.setLastReviewed(LocalDate.now());
-        topic.setLastDecayCheck(LocalDate.now());
-        topic.setStatus(KnowledgeStatus.CURRENT);
 
         return toResponse(knowledgeTopicRepository.save(topic));
     }
@@ -115,8 +131,11 @@ public class KnowledgeService {
      * Get topics needing revision
      */
     public List<KnowledgeTopicResponse> getTopicsNeedingRevision(User owner) {
-        return knowledgeTopicRepository.findByOwner_IdAndStatusOrderByCreatedAtDesc(owner.getId(), KnowledgeStatus.NEEDS_REVISION)
-                .stream()
+        List<KnowledgeTopic> topics = knowledgeTopicRepository.findByOwner_IdOrderByCreatedAtDesc(owner.getId());
+        refreshTopicStates(topics);
+
+        return topics.stream()
+                .filter(topic -> topic.getStatus() == KnowledgeStatus.NEEDS_REVISION)
                 .map(this::toResponse)
                 .toList();
     }
@@ -125,14 +144,20 @@ public class KnowledgeService {
      * Get topics for a specific user
      */
     public List<KnowledgeTopicResponse> getTopicsForUser(User owner) {
-        return knowledgeTopicRepository.findByOwner_IdOrderByCreatedAtDesc(owner.getId())
+        List<KnowledgeTopic> topics = knowledgeTopicRepository.findByOwner_IdOrderByCreatedAtDesc(owner.getId());
+        refreshTopicStates(topics);
+
+        return topics
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     public List<KnowledgeTopicResponse> getTopicsByUser(UUID userId) {
-        return knowledgeTopicRepository.findByOwner_IdOrderByCreatedAtDesc(userId)
+        List<KnowledgeTopic> topics = knowledgeTopicRepository.findByOwner_IdOrderByCreatedAtDesc(userId);
+        refreshTopicStates(topics);
+
+        return topics
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -145,17 +170,20 @@ public class KnowledgeService {
     }
 
     private void applyDecayState(KnowledgeTopic topic) {
-        double newMastery = topic.calculateCurrentMastery();
-        topic.setMasteryLevel(newMastery);
-        topic.setLastDecayCheck(LocalDate.now());
-
-        if (newMastery < 40.0) {
-            topic.setStatus(KnowledgeStatus.NEEDS_REVISION);
-        } else if (newMastery < 75.0) {
-            topic.setStatus(KnowledgeStatus.DECAYING);
-        } else {
-            topic.setStatus(KnowledgeStatus.CURRENT);
+        if (topic.getStatus() == KnowledgeStatus.DRAFT) {
+            return;
         }
+
+        knowledgeDecayEngine.applyDecay(topic, LocalDate.now());
+    }
+
+    private void refreshTopicStates(List<KnowledgeTopic> topics) {
+        if (topics.isEmpty()) {
+            return;
+        }
+
+        topics.forEach(this::applyDecayState);
+        knowledgeTopicRepository.saveAll(topics);
     }
 
     public KnowledgeTopicResponse toResponse(KnowledgeTopic topic) {
@@ -166,7 +194,18 @@ public class KnowledgeService {
                 topic.getContent(),
                 topic.getStatus() != null ? topic.getStatus().name() : null,
                 topic.getMasteryLevel(),
+                topic.getRetrievabilityScore(),
                 topic.getDecayRate(),
+                topic.getStabilityDays(),
+                topic.getEaseFactor(),
+                topic.getDifficultyIndex(),
+                topic.getNextReviewDate(),
+                topic.getReviewCount(),
+                topic.getSuccessfulReviews(),
+                topic.getConsecutiveSuccessfulReviews(),
+                topic.getLapseCount(),
+                topic.getLastRecallScore(),
+                topic.getAverageRecallScore(),
                 topic.getLastReviewed(),
                 topic.getLastDecayCheck(),
                 topic.getCreatedAt(),
