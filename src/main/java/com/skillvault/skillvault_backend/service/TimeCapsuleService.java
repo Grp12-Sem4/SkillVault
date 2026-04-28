@@ -50,12 +50,12 @@ public class TimeCapsuleService {
     private final TimeCapsuleKnowledgeRepository timeCapsuleKnowledgeRepository;
 
     public TimeCapsuleService(UserRepository userRepository,
-                              SkillRepository skillRepository,
-                              KnowledgeTopicRepository knowledgeTopicRepository,
-                              TradeSessionRepository tradeSessionRepository,
-                              TimeCapsuleSnapshotRepository timeCapsuleSnapshotRepository,
-                              TimeCapsuleSkillRepository timeCapsuleSkillRepository,
-                              TimeCapsuleKnowledgeRepository timeCapsuleKnowledgeRepository) {
+            SkillRepository skillRepository,
+            KnowledgeTopicRepository knowledgeTopicRepository,
+            TradeSessionRepository tradeSessionRepository,
+            TimeCapsuleSnapshotRepository timeCapsuleSnapshotRepository,
+            TimeCapsuleSkillRepository timeCapsuleSkillRepository,
+            TimeCapsuleKnowledgeRepository timeCapsuleKnowledgeRepository) {
         this.userRepository = userRepository;
         this.skillRepository = skillRepository;
         this.knowledgeTopicRepository = knowledgeTopicRepository;
@@ -66,15 +66,16 @@ public class TimeCapsuleService {
     }
 
     @Transactional
-    public TimeCapsuleSnapshotSummaryResponse createSnapshot(String userEmail, CreateTimeCapsuleSnapshotRequest request) {
+    public TimeCapsuleSnapshotSummaryResponse createSnapshot(String userEmail,
+            CreateTimeCapsuleSnapshotRequest request) {
         User user = getAuthenticatedUser(userEmail);
         String snapshotName = validateSnapshotName(request);
 
         List<Skill> currentSkills = skillRepository.findByUser(user);
-        List<KnowledgeTopic> currentKnowledgeTopics =
-                knowledgeTopicRepository.findByOwner_IdOrderByCreatedAtDesc(user.getId());
-        List<TradeSession> trades =
-                tradeSessionRepository.findDistinctByRequesterOrProviderOrderByScheduledTimeDesc(user, user);
+        List<KnowledgeTopic> currentKnowledgeTopics = knowledgeTopicRepository
+                .findByOwner_IdOrderByCreatedAtDesc(user.getId());
+        List<TradeSession> trades = tradeSessionRepository
+                .findDistinctByRequesterOrProviderOrderByScheduledTimeDesc(user, user);
 
         TimeCapsuleSnapshot snapshot = new TimeCapsuleSnapshot();
         snapshot.setUser(user);
@@ -98,7 +99,8 @@ public class TimeCapsuleService {
 
     public List<TimeCapsuleSnapshotSummaryResponse> getAllSnapshots(String userEmail) {
         User user = getAuthenticatedUser(userEmail);
-        List<TimeCapsuleSnapshot> snapshots = timeCapsuleSnapshotRepository.findByUser_IdOrderByCreatedAtDesc(user.getId());
+        List<TimeCapsuleSnapshot> snapshots = timeCapsuleSnapshotRepository
+                .findByUser_IdOrderByCreatedAtDesc(user.getId());
         List<Long> snapshotIds = snapshots.stream()
                 .map(TimeCapsuleSnapshot::getId)
                 .toList();
@@ -110,29 +112,28 @@ public class TimeCapsuleService {
         Map<Long, Long> skillCountsBySnapshotId = timeCapsuleSkillRepository.findBySnapshot_IdIn(snapshotIds).stream()
                 .collect(java.util.stream.Collectors.groupingBy(
                         skill -> skill.getSnapshot().getId(),
-                        java.util.stream.Collectors.counting()
-                ));
-        Map<Long, Long> knowledgeCountsBySnapshotId = timeCapsuleKnowledgeRepository.findBySnapshot_IdIn(snapshotIds).stream()
+                        java.util.stream.Collectors.counting()));
+        Map<Long, Long> knowledgeCountsBySnapshotId = timeCapsuleKnowledgeRepository.findBySnapshot_IdIn(snapshotIds)
+                .stream()
                 .collect(java.util.stream.Collectors.groupingBy(
                         topic -> topic.getSnapshot().getId(),
-                        java.util.stream.Collectors.counting()
-                ));
+                        java.util.stream.Collectors.counting()));
 
         return snapshots.stream()
                 .map(snapshot -> toSummary(
                         snapshot,
                         skillCountsBySnapshotId.getOrDefault(snapshot.getId(), 0L).intValue(),
-                        knowledgeCountsBySnapshotId.getOrDefault(snapshot.getId(), 0L).intValue()
-                ))
+                        knowledgeCountsBySnapshotId.getOrDefault(snapshot.getId(), 0L).intValue()))
                 .toList();
     }
 
     public TimeCapsuleSnapshotDetailResponse getSnapshot(String userEmail, Long snapshotId) {
         User user = getAuthenticatedUser(userEmail);
         TimeCapsuleSnapshot snapshot = getOwnedSnapshotOrThrow(snapshotId, user);
-        List<TimeCapsuleSkill> skills = timeCapsuleSkillRepository.findBySnapshot_IdOrderBySkillNameAsc(snapshot.getId());
-        List<TimeCapsuleKnowledge> knowledgeTopics =
-                timeCapsuleKnowledgeRepository.findBySnapshot_IdOrderByTopicNameAsc(snapshot.getId());
+        List<TimeCapsuleSkill> skills = timeCapsuleSkillRepository
+                .findBySnapshot_IdOrderBySkillNameAsc(snapshot.getId());
+        List<TimeCapsuleKnowledge> knowledgeTopics = timeCapsuleKnowledgeRepository
+                .findBySnapshot_IdOrderByTopicNameAsc(snapshot.getId());
         return toDetail(snapshot, skills, knowledgeTopics);
     }
 
@@ -148,46 +149,74 @@ public class TimeCapsuleService {
         TimeCapsuleSnapshot oldSnapshot = getOwnedSnapshotOrThrow(request.oldSnapshotId(), user);
         TimeCapsuleSnapshot newSnapshot = getOwnedSnapshotOrThrow(request.newSnapshotId(), user);
 
-        List<TimeCapsuleSkill> oldSkills =
-                timeCapsuleSkillRepository.findBySnapshot_IdOrderBySkillNameAsc(oldSnapshot.getId());
-        List<TimeCapsuleSkill> newSkills =
-                timeCapsuleSkillRepository.findBySnapshot_IdOrderBySkillNameAsc(newSnapshot.getId());
-        List<TimeCapsuleKnowledge> oldKnowledgeTopics =
-                timeCapsuleKnowledgeRepository.findBySnapshot_IdOrderByTopicNameAsc(oldSnapshot.getId());
-        List<TimeCapsuleKnowledge> newKnowledgeTopics =
-                timeCapsuleKnowledgeRepository.findBySnapshot_IdOrderByTopicNameAsc(newSnapshot.getId());
+        List<TimeCapsuleSkill> oldSkills = timeCapsuleSkillRepository
+                .findBySnapshot_IdOrderBySkillNameAsc(oldSnapshot.getId());
+        List<TimeCapsuleSkill> newSkills = timeCapsuleSkillRepository
+                .findBySnapshot_IdOrderBySkillNameAsc(newSnapshot.getId());
+        List<TimeCapsuleKnowledge> oldKnowledgeTopics = timeCapsuleKnowledgeRepository
+                .findBySnapshot_IdOrderByTopicNameAsc(oldSnapshot.getId());
+        List<TimeCapsuleKnowledge> newKnowledgeTopics = timeCapsuleKnowledgeRepository
+                .findBySnapshot_IdOrderByTopicNameAsc(newSnapshot.getId());
+
+        Map<String, TimeCapsuleSkill> oldSkillsByKey = new LinkedHashMap<>();
+        oldSkills.forEach(
+                skill -> oldSkillsByKey.put(comparisonKey(skill.getSourceSkillId(), skill.getSkillName()), skill));
 
         Map<String, TimeCapsuleSkill> newSkillsByKey = new LinkedHashMap<>();
-        newSkills.forEach(skill -> newSkillsByKey.put(comparisonKey(skill.getSourceSkillId(), skill.getSkillName()), skill));
+        newSkills.forEach(
+                skill -> newSkillsByKey.put(comparisonKey(skill.getSourceSkillId(), skill.getSkillName()), skill));
 
-        List<SkillSnapshotComparisonDto> commonSkills = oldSkills.stream()
-                .map(oldSkill -> {
-                    String key = comparisonKey(oldSkill.getSourceSkillId(), oldSkill.getSkillName());
-                    TimeCapsuleSkill newSkill = newSkillsByKey.get(key);
-                    return newSkill == null ? null : toSkillComparison(oldSkill, newSkill);
+        java.util.Set<String> allSkillKeys = new java.util.HashSet<>();
+        allSkillKeys.addAll(oldSkillsByKey.keySet());
+        allSkillKeys.addAll(newSkillsByKey.keySet());
+
+        List<SkillSnapshotComparisonDto> skillComparisons = allSkillKeys.stream()
+                .map(key -> {
+                    TimeCapsuleSkill oldS = oldSkillsByKey.get(key);
+                    TimeCapsuleSkill newS = newSkillsByKey.get(key);
+                    return new SkillSnapshotComparisonDto(
+                            oldS != null ? oldS.getSourceSkillId() : newS.getSourceSkillId(),
+                            oldS != null ? oldS.getSkillName() : newS.getSkillName(),
+                            oldS != null ? defaultDouble(oldS.getConfidenceIndex()) : 0.0,
+                            oldS != null ? defaultInteger(oldS.getMasteryLevel()) : 0,
+                            newS != null ? defaultDouble(newS.getConfidenceIndex()) : 0.0,
+                            newS != null ? defaultInteger(newS.getMasteryLevel()) : 0);
                 })
-                .filter(Objects::nonNull)
                 .toList();
 
-        Map<String, TimeCapsuleKnowledge> newKnowledgeByKey = new LinkedHashMap<>();
-        newKnowledgeTopics.forEach(topic ->
-                newKnowledgeByKey.put(comparisonKey(topic.getSourceTopicId(), topic.getTopicName()), topic));
+        Map<String, TimeCapsuleKnowledge> oldKnowledgeByKey = new LinkedHashMap<>();
+        oldKnowledgeTopics.forEach(
+                topic -> oldKnowledgeByKey.put(comparisonKey(topic.getSourceTopicId(), topic.getTopicName()), topic));
 
-        List<KnowledgeSnapshotComparisonDto> commonKnowledgeTopics = oldKnowledgeTopics.stream()
-                .map(oldTopic -> {
-                    String key = comparisonKey(oldTopic.getSourceTopicId(), oldTopic.getTopicName());
-                    TimeCapsuleKnowledge newTopic = newKnowledgeByKey.get(key);
-                    return newTopic == null ? null : toKnowledgeComparison(oldTopic, newTopic);
+        Map<String, TimeCapsuleKnowledge> newKnowledgeByKey = new LinkedHashMap<>();
+        newKnowledgeTopics.forEach(
+                topic -> newKnowledgeByKey.put(comparisonKey(topic.getSourceTopicId(), topic.getTopicName()), topic));
+
+        java.util.Set<String> allKnowledgeKeys = new java.util.HashSet<>();
+        allKnowledgeKeys.addAll(oldKnowledgeByKey.keySet());
+        allKnowledgeKeys.addAll(newKnowledgeByKey.keySet());
+
+        List<KnowledgeSnapshotComparisonDto> knowledgeComparisons = allKnowledgeKeys.stream()
+                .map(key -> {
+                    TimeCapsuleKnowledge oldK = oldKnowledgeByKey.get(key);
+                    TimeCapsuleKnowledge newK = newKnowledgeByKey.get(key);
+                    return new KnowledgeSnapshotComparisonDto(
+                            oldK != null ? oldK.getSourceTopicId() : newK.getSourceTopicId(),
+                            oldK != null ? oldK.getTopicName() : newK.getTopicName(),
+                            oldK != null ? defaultDouble(oldK.getMasteryLevel()) : 0.0,
+                            oldK != null ? defaultInteger(oldK.getReviewCount()) : 0,
+                            oldK != null ? defaultDouble(oldK.getRetrievabilityScore()) : 0.0,
+                            newK != null ? defaultDouble(newK.getMasteryLevel()) : 0.0,
+                            newK != null ? defaultInteger(newK.getReviewCount()) : 0,
+                            newK != null ? defaultDouble(newK.getRetrievabilityScore()) : 0.0);
                 })
-                .filter(Objects::nonNull)
                 .toList();
 
         return new TimeCapsuleComparisonResponse(
                 toSummary(oldSnapshot, oldSkills.size(), oldKnowledgeTopics.size()),
                 toSummary(newSnapshot, newSkills.size(), newKnowledgeTopics.size()),
-                commonSkills,
-                commonKnowledgeTopics
-        );
+                skillComparisons,
+                knowledgeComparisons);
     }
 
     private User getAuthenticatedUser(String userEmail) {
@@ -196,7 +225,8 @@ public class TimeCapsuleService {
         }
 
         return userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
     }
 
     private TimeCapsuleSnapshot getOwnedSnapshotOrThrow(Long snapshotId, User user) {
@@ -222,7 +252,8 @@ public class TimeCapsuleService {
         return toSummary(snapshot, skillCount, knowledgeTopicCount);
     }
 
-    private TimeCapsuleSnapshotSummaryResponse toSummary(TimeCapsuleSnapshot snapshot, int skillCount, int knowledgeTopicCount) {
+    private TimeCapsuleSnapshotSummaryResponse toSummary(TimeCapsuleSnapshot snapshot, int skillCount,
+            int knowledgeTopicCount) {
         return new TimeCapsuleSnapshotSummaryResponse(
                 snapshot.getId(),
                 snapshot.getName(),
@@ -231,13 +262,12 @@ public class TimeCapsuleService {
                 defaultInteger(snapshot.getTotalTrades()),
                 defaultDouble(snapshot.getAverageRating()),
                 skillCount,
-                knowledgeTopicCount
-        );
+                knowledgeTopicCount);
     }
 
     private TimeCapsuleSnapshotDetailResponse toDetail(TimeCapsuleSnapshot snapshot,
-                                                       List<TimeCapsuleSkill> skills,
-                                                       List<TimeCapsuleKnowledge> knowledgeTopics) {
+            List<TimeCapsuleSkill> skills,
+            List<TimeCapsuleKnowledge> knowledgeTopics) {
         List<TimeCapsuleSkillSnapshotDto> skillDtos = skills.stream()
                 .map(this::toSkillSnapshotDto)
                 .toList();
@@ -255,8 +285,7 @@ public class TimeCapsuleService {
                 skillDtos.size(),
                 knowledgeDtos.size(),
                 skillDtos,
-                knowledgeDtos
-        );
+                knowledgeDtos);
     }
 
     private TimeCapsuleSkillSnapshotDto toSkillSnapshotDto(TimeCapsuleSkill skill) {
@@ -268,8 +297,7 @@ public class TimeCapsuleService {
                 defaultInteger(skill.getMasteryLevel()),
                 defaultInteger(skill.getPracticeCount()),
                 defaultInteger(skill.getTeachingCount()),
-                defaultInteger(skill.getUsageFrequency())
-        );
+                defaultInteger(skill.getUsageFrequency()));
     }
 
     private TimeCapsuleKnowledgeSnapshotDto toKnowledgeSnapshotDto(TimeCapsuleKnowledge topic) {
@@ -280,8 +308,7 @@ public class TimeCapsuleService {
                 defaultInteger(topic.getReviewCount()),
                 defaultDouble(topic.getRetrievabilityScore()),
                 topic.getDecayStatus(),
-                topic.getRevisionStatus()
-        );
+                topic.getRevisionStatus());
     }
 
     private TimeCapsuleSkill toSnapshotSkill(TimeCapsuleSnapshot snapshot, Skill skill) {
@@ -318,12 +345,11 @@ public class TimeCapsuleService {
                 defaultDouble(oldSkill.getConfidenceIndex()),
                 defaultInteger(oldSkill.getMasteryLevel()),
                 defaultDouble(newSkill.getConfidenceIndex()),
-                defaultInteger(newSkill.getMasteryLevel())
-        );
+                defaultInteger(newSkill.getMasteryLevel()));
     }
 
     private KnowledgeSnapshotComparisonDto toKnowledgeComparison(TimeCapsuleKnowledge oldTopic,
-                                                                 TimeCapsuleKnowledge newTopic) {
+            TimeCapsuleKnowledge newTopic) {
         return new KnowledgeSnapshotComparisonDto(
                 oldTopic.getSourceTopicId() != null ? oldTopic.getSourceTopicId() : newTopic.getSourceTopicId(),
                 firstNonBlank(oldTopic.getTopicName(), newTopic.getTopicName()),
@@ -332,14 +358,14 @@ public class TimeCapsuleService {
                 defaultDouble(oldTopic.getRetrievabilityScore()),
                 defaultDouble(newTopic.getMasteryLevel()),
                 defaultInteger(newTopic.getReviewCount()),
-                defaultDouble(newTopic.getRetrievabilityScore())
-        );
+                defaultDouble(newTopic.getRetrievabilityScore()));
     }
 
     private double calculateAverageRating(List<TradeSession> trades, User user) {
         List<Integer> ratings = trades.stream()
                 .filter(trade -> trade.getRating() != null)
-                .filter(trade -> trade.getProvider() != null && Objects.equals(trade.getProvider().getId(), user.getId()))
+                .filter(trade -> trade.getProvider() != null
+                        && Objects.equals(trade.getProvider().getId(), user.getId()))
                 .map(TradeSession::getRating)
                 .toList();
 
