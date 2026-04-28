@@ -28,7 +28,7 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
-      const response = await api.post('/auth/login', formData);
+      const response = await api.post('/api/auth/login', formData);
       const token = response.data?.token;
 
       if (!token || !login(token)) {

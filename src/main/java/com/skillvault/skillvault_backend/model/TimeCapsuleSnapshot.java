@@ -1,5 +1,6 @@
 package com.skillvault.skillvault_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,6 +35,7 @@ public class TimeCapsuleSnapshot {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @Column(nullable = false)
@@ -52,9 +54,11 @@ public class TimeCapsuleSnapshot {
     private Double averageRating;
 
     @OneToMany(mappedBy = "snapshot", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<TimeCapsuleSkill> skills = new ArrayList<>();
 
     @OneToMany(mappedBy = "snapshot", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<TimeCapsuleKnowledge> knowledgeTopics = new ArrayList<>();
 
     public void addSkill(TimeCapsuleSkill skill) {

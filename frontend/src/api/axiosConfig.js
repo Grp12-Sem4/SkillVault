@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8080';
 const TOKEN_STORAGE_KEY = 'token';
 const AUTH_LOGOUT_EVENT = 'auth:logout';
 

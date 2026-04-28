@@ -30,7 +30,7 @@ export default function Register() {
     setIsSubmitting(true);
 
     try {
-      const response = await api.post('/auth/register', formData);
+      const response = await api.post('/api/auth/register', formData);
       const token = response.data?.token;
 
       if (!token || !login(token)) {

@@ -68,7 +68,7 @@ export default function Trades() {
   } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: async () => {
-      const response = await api.get('/users/me');
+      const response = await api.get('/api/users/me');
       return response.data;
     },
   });
@@ -81,7 +81,7 @@ export default function Trades() {
   } = useQuery({
     queryKey: MARKETPLACE_SKILLS_QUERY_KEY,
     queryFn: async () => {
-      const response = await api.get('/skills/marketplace');
+      const response = await api.get('/api/skills/marketplace');
       return response.data ?? [];
     },
   });
@@ -94,7 +94,7 @@ export default function Trades() {
   } = useQuery({
     queryKey: TRADES_QUERY_KEY,
     queryFn: async () => {
-      const response = await api.get('/trades');
+      const response = await api.get('/api/trades');
       return response.data ?? [];
     },
   });
@@ -103,7 +103,7 @@ export default function Trades() {
 
   const createTradeMutation = useMutation({
     mutationFn: async (payload) => {
-      const response = await api.post('/trades', payload);
+      const response = await api.post('/api/trades', payload);
       return response.data;
     },
     onSuccess: () => {
@@ -120,7 +120,7 @@ export default function Trades() {
 
   const acceptTradeMutation = useMutation({
     mutationFn: async (tradeId) => {
-      const response = await api.put(`/trades/${tradeId}/accept`);
+      const response = await api.put(`/api/trades/${tradeId}/accept`);
       return response.data;
     },
     onSuccess: () => {
@@ -131,7 +131,7 @@ export default function Trades() {
 
   const completeTradeMutation = useMutation({
     mutationFn: async ({ tradeId, rating }) => {
-      const response = await api.put(`/trades/${tradeId}/complete`, { rating });
+      const response = await api.put(`/api/trades/${tradeId}/complete`, { rating });
       return response.data;
     },
     onSuccess: (_, variables) => {

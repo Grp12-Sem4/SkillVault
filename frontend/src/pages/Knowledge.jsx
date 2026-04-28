@@ -129,7 +129,7 @@ export default function Knowledge() {
   } = useQuery({
     queryKey: ALL_TOPICS_QUERY_KEY,
     queryFn: async () => {
-      const response = await api.get('/knowledge');
+      const response = await api.get('/api/knowledge');
       return response.data ?? [];
     },
   });
@@ -142,14 +142,14 @@ export default function Knowledge() {
   } = useQuery({
     queryKey: NEEDS_REVISION_QUERY_KEY,
     queryFn: async () => {
-      const response = await api.get('/knowledge/needs-revision');
+      const response = await api.get('/api/knowledge/needs-revision');
       return response.data ?? [];
     },
   });
 
   const createTopicMutation = useMutation({
     mutationFn: async (payload) => {
-      const response = await api.post('/knowledge', payload);
+      const response = await api.post('/api/knowledge', payload);
       return response.data;
     },
     onSuccess: () => {
@@ -165,7 +165,7 @@ export default function Knowledge() {
 
   const reviewTopicMutation = useMutation({
     mutationFn: async (topicId) => {
-      const response = await api.put(`/knowledge/${topicId}/review`);
+      const response = await api.put(`/api/knowledge/${topicId}/review`);
       return response.data;
     },
     onSuccess: () => {

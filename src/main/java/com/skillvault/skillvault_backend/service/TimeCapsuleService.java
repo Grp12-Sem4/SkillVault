@@ -98,8 +98,32 @@ public class TimeCapsuleService {
 
     public List<TimeCapsuleSnapshotSummaryResponse> getAllSnapshots(String userEmail) {
         User user = getAuthenticatedUser(userEmail);
-        return timeCapsuleSnapshotRepository.findByUser_IdOrderByCreatedAtDesc(user.getId()).stream()
-                .map(this::toSummary)
+        List<TimeCapsuleSnapshot> snapshots = timeCapsuleSnapshotRepository.findByUser_IdOrderByCreatedAtDesc(user.getId());
+        List<Long> snapshotIds = snapshots.stream()
+                .map(TimeCapsuleSnapshot::getId)
+                .toList();
+
+        if (snapshotIds.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, Long> skillCountsBySnapshotId = timeCapsuleSkillRepository.findBySnapshot_IdIn(snapshotIds).stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        skill -> skill.getSnapshot().getId(),
+                        java.util.stream.Collectors.counting()
+                ));
+        Map<Long, Long> knowledgeCountsBySnapshotId = timeCapsuleKnowledgeRepository.findBySnapshot_IdIn(snapshotIds).stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        topic -> topic.getSnapshot().getId(),
+                        java.util.stream.Collectors.counting()
+                ));
+
+        return snapshots.stream()
+                .map(snapshot -> toSummary(
+                        snapshot,
+                        skillCountsBySnapshotId.getOrDefault(snapshot.getId(), 0L).intValue(),
+                        knowledgeCountsBySnapshotId.getOrDefault(snapshot.getId(), 0L).intValue()
+                ))
                 .toList();
     }
 
@@ -159,8 +183,8 @@ public class TimeCapsuleService {
                 .toList();
 
         return new TimeCapsuleComparisonResponse(
-                toSummary(oldSnapshot),
-                toSummary(newSnapshot),
+                toSummary(oldSnapshot, oldSkills.size(), oldKnowledgeTopics.size()),
+                toSummary(newSnapshot, newSkills.size(), newKnowledgeTopics.size()),
                 commonSkills,
                 commonKnowledgeTopics
         );
@@ -193,6 +217,12 @@ public class TimeCapsuleService {
     }
 
     private TimeCapsuleSnapshotSummaryResponse toSummary(TimeCapsuleSnapshot snapshot) {
+        int skillCount = snapshot.getSkills() != null ? snapshot.getSkills().size() : 0;
+        int knowledgeTopicCount = snapshot.getKnowledgeTopics() != null ? snapshot.getKnowledgeTopics().size() : 0;
+        return toSummary(snapshot, skillCount, knowledgeTopicCount);
+    }
+
+    private TimeCapsuleSnapshotSummaryResponse toSummary(TimeCapsuleSnapshot snapshot, int skillCount, int knowledgeTopicCount) {
         return new TimeCapsuleSnapshotSummaryResponse(
                 snapshot.getId(),
                 snapshot.getName(),
@@ -200,8 +230,8 @@ public class TimeCapsuleService {
                 defaultInteger(snapshot.getCreditBalance()),
                 defaultInteger(snapshot.getTotalTrades()),
                 defaultDouble(snapshot.getAverageRating()),
-                snapshot.getSkills() != null ? snapshot.getSkills().size() : 0,
-                snapshot.getKnowledgeTopics() != null ? snapshot.getKnowledgeTopics().size() : 0
+                skillCount,
+                knowledgeTopicCount
         );
     }
 

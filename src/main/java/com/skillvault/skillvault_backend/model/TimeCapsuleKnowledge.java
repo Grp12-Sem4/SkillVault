@@ -1,5 +1,6 @@
 package com.skillvault.skillvault_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -30,6 +31,7 @@ public class TimeCapsuleKnowledge {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "snapshot_id", nullable = false)
+    @JsonIgnore
     private TimeCapsuleSnapshot snapshot;
 
     @Column(name = "source_topic_id")

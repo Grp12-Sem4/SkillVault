@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { to: '/skills', label: 'Skills' },
   { to: '/knowledge', label: 'Knowledge' },
   { to: '/trades', label: 'Trades' },
+  { to: '/time-capsules', label: 'Time Capsules' },
 ];
 
 export default function AppNavigation() {
